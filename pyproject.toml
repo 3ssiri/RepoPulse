@@ -5,6 +5,21 @@ description = "A CLI tool that analyzes GitHub repository health and generates q
 authors = [{ name = "Ali Assiri" }]
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["github", "cli", "repository-health", "oss", "code-quality", "maintainer-tools"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Version Control :: Git",
+    "Typing :: Typed"
+]
 dependencies = [
     "typer>=0.26.5",
     "requests>=2.34.2",
@@ -22,6 +37,13 @@ dev = [
 
 [project.scripts]
 repopulse = "repopulse.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/3ssiri/RepoPulse"
+Repository = "https://github.com/3ssiri/RepoPulse"
+Issues = "https://github.com/3ssiri/RepoPulse/issues"
+Changelog = "https://github.com/3ssiri/RepoPulse/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/3ssiri/RepoPulse/blob/main/USAGE.md"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

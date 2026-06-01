@@ -5,8 +5,8 @@ Thank you for considering a contribution to RepoPulse.
 ## Local Setup
 
 ```bash
-git clone https://github.com/3ssiri/RepoPluse.git
-cd RepoPluse
+git clone https://github.com/3ssiri/RepoPulse.git
+cd RepoPulse
 pip install -e ".[dev]"
 ```
 
@@ -56,6 +56,7 @@ docs/
 - Include tests for behavior changes.
 - Update documentation when commands, checks, scoring, or outputs change.
 - Run `pytest` before opening a pull request.
+- Use the pull request template and describe user-visible behavior changes.
 
 ## Development Commands
 

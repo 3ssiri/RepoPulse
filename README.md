@@ -1,5 +1,9 @@
 # RepoPulse
 
+[![CI](https://github.com/3ssiri/RepoPulse/actions/workflows/ci.yml/badge.svg)](https://github.com/3ssiri/RepoPulse/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/3ssiri/RepoPulse/actions/workflows/codeql.yml/badge.svg)](https://github.com/3ssiri/RepoPulse/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 RepoPulse is a Python CLI tool that scans GitHub repositories and produces a practical health report with a score out of 100, clear warnings, and actionable recommendations.
 
 It is built for developers who want a quick repository quality review from the terminal, and for maintainers who want a small tool they can later run in CI.
@@ -14,8 +18,15 @@ It is built for developers who want a quick repository quality review from the t
 - [Architecture](ARCHITECTURE.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
+- [Roadmap](docs/roadmap.md)
 - [License](LICENSE)
 - [Changelog](CHANGELOG.md)
+
+## Why RepoPulse Matters
+
+Open source maintainers repeat the same repository hygiene checks across projects: README quality, licensing, CI, tests, stale activity, sensitive file names, and basic security posture. RepoPulse turns those checks into a quick, repeatable report that can run locally or in automation.
+
+The project is early-stage, but it is designed around practical maintainer workflows: fast triage, clear recommendations, CI thresholds, and machine-readable output for future automation.
 
 ## Features
 
@@ -51,8 +62,8 @@ RepoPulse is built with:
 Clone the repository and install it in editable mode:
 
 ```bash
-git clone https://github.com/3ssiri/RepoPluse.git
-cd RepoPluse
+git clone https://github.com/3ssiri/RepoPulse.git
+cd RepoPulse
 pip install -e .
 ```
 
@@ -81,6 +92,14 @@ GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/privat
 ```
 
 See [USAGE.md](USAGE.md) for all options and examples.
+
+## OSS Maintainer Use Cases
+
+- Run repository health checks before releases.
+- Add a `--fail-under` threshold to CI for project quality gates.
+- Export Markdown reports for issue triage or maintainer handoff.
+- Export JSON for dashboards, bots, or future AI-assisted review workflows.
+- Audit public or private repositories without printing secret contents.
 
 ## Example Output
 

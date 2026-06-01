@@ -12,8 +12,8 @@ This guide explains how to install RepoPulse for normal use and for development.
 ## Install From Source
 
 ```bash
-git clone https://github.com/3ssiri/RepoPluse.git
-cd RepoPluse
+git clone https://github.com/3ssiri/RepoPulse.git
+cd RepoPulse
 pip install -e .
 ```
 
