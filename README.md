@@ -12,8 +12,11 @@ RepoPulse helps developers review the public quality signals of a GitHub reposit
 - Scan private repositories with `--token` or `GITHUB_TOKEN`.
 - Score repository health out of 100.
 - Render a Rich terminal report.
+- Print compact summaries for automation.
 - Export Markdown reports with `--export`.
-- Print machine-readable JSON with `--json`.
+- Print or write machine-readable JSON.
+- Fail CI jobs with `--fail-under`.
+- Advisory dependency and security baseline checks.
 - Avoid printing secret contents; sensitive-file checks inspect file names only.
 
 ## Installation
@@ -34,6 +37,11 @@ pip install -e ".[dev]"
 repopulse scan https://github.com/username/repository
 repopulse scan https://github.com/username/repository --export report.md
 repopulse scan https://github.com/username/repository --json
+repopulse scan https://github.com/username/repository --format markdown --output report.md
+repopulse scan https://github.com/username/repository --format json --output report.json
+repopulse scan https://github.com/username/repository --fail-under 75
+repopulse scan https://github.com/username/repository --quiet
+repopulse scan https://github.com/username/repository --verbose
 repopulse scan https://github.com/username/private-repo --token YOUR_GITHUB_TOKEN
 ```
 
@@ -46,14 +54,15 @@ GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/privat
 ## Example Output
 
 ```text
-RepoPulse Health Report for 3ssiri/school-attenda
-Score: 78 / 100 - Good
+RepoPulse Health Report for psf/requests
+Score: 89 / 100 - Good
 
 Checks
-README Quality      PASS   18/20
-License             FAIL    0/10
+README Quality      PASS   16/20
+License             PASS   10/10
 .gitignore          PASS   10/10
-Tests               WARN    7/15
+Tests               WARN   12/15
+GitHub Actions      PASS   15/15
 ```
 
 ## Scoring System
@@ -91,6 +100,10 @@ Grades:
 - Sensitive file names such as `.env`, `credentials.json`, and private keys.
 - Project structure directories and root clutter.
 - Package scripts or Python project configuration.
+- Dependency hygiene through lockfiles and Dependabot.
+- Security baseline through `SECURITY.md`, Dependabot, and CodeQL.
+
+Dependency and security checks are advisory in v0.1.0, so they add recommendations without changing the 100-point core score.
 
 ## Roadmap
 

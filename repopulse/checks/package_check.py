@@ -2,7 +2,14 @@ from repopulse.models import CheckResult, FileItem
 from repopulse.utils import find_file, parse_json_content
 
 
-def run_package_check(files: list[FileItem], package_json_content: str | None = None) -> CheckResult:
+PYTHON_TOOLING = ("pytest", "ruff", "mypy", "tox", "nox", "black")
+
+
+def run_package_check(
+    files: list[FileItem],
+    package_json_content: str | None = None,
+    pyproject_content: str | None = None,
+) -> CheckResult:
     package = parse_json_content(package_json_content)
     scripts = package.get("scripts", {}) if isinstance(package.get("scripts"), dict) else {}
     script_keys = {key for key in ("dev", "build", "test", "lint") if key in scripts and str(scripts[key]).strip()}
@@ -11,7 +18,11 @@ def run_package_check(files: list[FileItem], package_json_content: str | None = 
     has_requirements = find_file(files, {"requirements.txt"}) is not None
     has_package_json = find_file(files, {"package.json"}) is not None
 
+    python_tools = {tool for tool in PYTHON_TOOLING if pyproject_content and tool in pyproject_content.lower()}
+
     if has_package_json and len(script_keys) >= 3:
+        score = 5
+    elif has_pyproject and len(python_tools) >= 3:
         score = 5
     elif has_package_json and script_keys:
         score = 3

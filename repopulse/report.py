@@ -1,3 +1,5 @@
+import json
+
 from rich.console import Console
 from rich.table import Table
 
@@ -40,7 +42,21 @@ def render_markdown(report: HealthReport) -> str:
     return "\n".join(lines)
 
 
-def render_terminal(report: HealthReport, console: Console | None = None) -> None:
+def render_json(report: HealthReport) -> str:
+    return json.dumps(report.model_dump(), indent=2, ensure_ascii=False)
+
+
+def render_summary(report: HealthReport) -> str:
+    lines = [
+        f"{report.repository.full_name}: {report.total_score} / {report.max_score} - {report.grade}",
+    ]
+    if report.recommendations:
+        lines.append("Top recommendations:")
+        lines.extend(f"- {recommendation}" for recommendation in report.recommendations[:3])
+    return "\n".join(lines)
+
+
+def render_terminal(report: HealthReport, console: Console | None = None, verbose: bool = False) -> None:
     target = console or Console()
     repo = report.repository
     target.print(f"[bold]RepoPulse Health Report[/bold] for [cyan]{repo.full_name}[/cyan]")
@@ -57,7 +73,10 @@ def render_terminal(report: HealthReport, console: Console | None = None) -> Non
         table.add_row(check.title, f"[{style}]{check.status.upper()}[/{style}]", f"{check.score}/{check.max_score}", check.message)
     target.print(table)
 
-    if report.recommendations:
+    recommendations = report.recommendations if verbose else report.recommendations[:3]
+    if recommendations:
         target.print("[bold]Recommendations[/bold]")
-        for index, recommendation in enumerate(report.recommendations, start=1):
+        for index, recommendation in enumerate(recommendations, start=1):
             target.print(f"{index}. {recommendation}")
+        if not verbose and len(report.recommendations) > 3:
+            target.print(f"...and {len(report.recommendations) - 3} more. Use --verbose to show all.")
