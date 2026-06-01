@@ -9,3 +9,4 @@
 - Added advisory dependency and security baseline checks.
 - Added project CI, Dependabot, CodeQL, and security policy.
 - Added pytest coverage for parser, scoring, checks, and Markdown reporting.
+- Expanded public documentation with installation, usage, requirements, architecture, contribution, Arabic README, and check reference guides.
