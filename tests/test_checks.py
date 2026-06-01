@@ -5,6 +5,7 @@ from repopulse.checks.package_check import run_package_check
 from repopulse.checks.readme_check import run_readme_check
 from repopulse.checks.security_check import run_security_check
 from repopulse.checks.sensitive_files_check import run_sensitive_files_check
+from repopulse.checks.tests_check import run_tests_check
 from repopulse.models import FileItem
 
 
@@ -80,6 +81,22 @@ def test_package_check_scores_python_tooling():
 
     assert result.status == "pass"
     assert result.score == 5
+
+
+def test_tests_check_scores_python_pytest_configuration():
+    files = [item("tests/test_app.py"), item("pyproject.toml")]
+    pyproject = """
+    [project.optional-dependencies]
+    dev = ["pytest"]
+
+    [tool.pytest.ini_options]
+    testpaths = ["tests"]
+    """
+
+    result = run_tests_check(files, pyproject_content=pyproject)
+
+    assert result.status == "pass"
+    assert result.score == 15
 
 
 def test_dependencies_check_rewards_lockfile_and_dependabot():

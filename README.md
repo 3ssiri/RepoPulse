@@ -31,6 +31,21 @@ It is built for developers who want a quick repository quality review from the t
 - Detect common sensitive file names without printing secret contents.
 - Add advisory dependency and security baseline recommendations.
 
+## Tech Stack
+
+RepoPulse is built with:
+
+| Technology | Purpose |
+|---|---|
+| Python 3.11+ | Core runtime. |
+| Typer | CLI commands and options. |
+| Requests | GitHub API calls. |
+| Rich | Terminal tables and formatted output. |
+| Pydantic | Typed report and check models. |
+| python-dotenv | Optional `GITHUB_TOKEN` loading. |
+| Pytest | Test suite. |
+| Ruff | Linting in CI. |
+
 ## Installation
 
 Clone the repository and install it in editable mode:

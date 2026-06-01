@@ -77,7 +77,7 @@ def build_health_report(client: GitHubClient, owner: str, repo: str) -> HealthRe
         run_readme_check(files, readme_content),
         run_license_check(files),
         run_gitignore_check(files, gitignore_content),
-        run_tests_check(files, package_content),
+        run_tests_check(files, package_content, pyproject_content),
         run_actions_check(files, workflow_contents),
         run_activity_check(repository.last_pushed_at),
         run_sensitive_files_check(files),

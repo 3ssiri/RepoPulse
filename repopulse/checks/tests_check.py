@@ -4,7 +4,11 @@ from repopulse.models import CheckResult, FileItem
 from repopulse.utils import parse_json_content
 
 
-def run_tests_check(files: list[FileItem], package_json_content: str | None = None) -> CheckResult:
+def run_tests_check(
+    files: list[FileItem],
+    package_json_content: str | None = None,
+    pyproject_content: str | None = None,
+) -> CheckResult:
     paths = [file.path for file in files if file.type == "blob"]
     lower_paths = [path.lower() for path in paths]
     has_test_dir = any(path.startswith(("tests/", "test/", "__tests__/")) for path in lower_paths)
@@ -16,7 +20,10 @@ def run_tests_check(files: list[FileItem], package_json_content: str | None = No
     )
     package = parse_json_content(package_json_content)
     scripts = package.get("scripts", {}) if isinstance(package.get("scripts"), dict) else {}
-    has_test_command = "test" in scripts and bool(str(scripts.get("test", "")).strip())
+    has_node_test_command = "test" in scripts and bool(str(scripts.get("test", "")).strip())
+    pyproject_lower = (pyproject_content or "").lower()
+    has_python_test_command = "pytest" in pyproject_lower or "[tool.pytest.ini_options]" in pyproject_lower
+    has_test_command = has_node_test_command or has_python_test_command
 
     if (has_test_dir or has_test_file) and has_test_command:
         score = 15
