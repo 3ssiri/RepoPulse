@@ -1,0 +1,14 @@
+fail_under: 85
+
+disabled_checks:
+  - activity
+
+weights:
+  readme: 25
+  tests: 20
+  github_actions: 20
+  license: 10
+  gitignore: 10
+  sensitive_files: 10
+  structure: 3
+  package_scripts: 2

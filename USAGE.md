@@ -67,6 +67,36 @@ repopulse scan https://github.com/username/repository --fail-under 75
 
 This is useful in GitHub Actions or other CI systems.
 
+## Configuration File
+
+RepoPulse reads `.repopulse.yml` from the current directory when the file exists. Use `--config` to pass a different path:
+
+```bash
+repopulse scan https://github.com/psf/requests --config examples/repopulse.yml
+```
+
+Supported keys:
+
+| Key | Purpose |
+|---|---|
+| `fail_under` | Default percentage threshold used when `--fail-under` is not provided. |
+| `disabled_checks` | List of check keys to exclude from the report and score. |
+| `weights` | Mapping of scored check keys to custom point values. |
+
+Example:
+
+```yaml
+fail_under: 85
+disabled_checks:
+  - activity
+weights:
+  readme: 25
+  tests: 20
+  github_actions: 20
+```
+
+CLI `--fail-under` takes precedence over `fail_under` in the config file.
+
 ## Quiet and Verbose Modes
 
 Quiet mode prints compact output:

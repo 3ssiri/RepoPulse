@@ -61,6 +61,7 @@ def test_render_json_is_pretty_json():
     rendered = render_json(report)
 
     assert rendered.startswith("{\n")
+    assert '"schema_version": "1.0"' in rendered
     assert '"grade": "Excellent"' in rendered
 
 

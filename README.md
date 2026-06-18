@@ -39,6 +39,7 @@ The project is early-stage, but it is designed around practical maintainer workf
 - Print or write JSON reports.
 - Produce compact summaries for automation.
 - Fail CI jobs with `--fail-under`.
+- Customize check weights and default thresholds with `.repopulse.yml`.
 - Detect common sensitive file names without printing secret contents.
 - Add advisory dependency and security baseline recommendations.
 
@@ -82,6 +83,7 @@ repopulse scan https://github.com/username/repository
 repopulse scan https://github.com/username/repository --export report.md
 repopulse scan https://github.com/username/repository --format json --output report.json
 repopulse scan https://github.com/username/repository --fail-under 75
+repopulse scan https://github.com/username/repository --config .repopulse.yml
 repopulse scan https://github.com/username/private-repo --token YOUR_GITHUB_TOKEN
 ```
 
@@ -140,6 +142,28 @@ Grades:
 | 0-39 | Critical |
 
 Dependency and security baseline checks are advisory in `v0.1.0`; they add recommendations without changing the 100-point score.
+
+## Configuration
+
+RepoPulse automatically reads `.repopulse.yml` from the current directory when present. You can also pass a file explicitly:
+
+```bash
+repopulse scan https://github.com/username/repository --config examples/repopulse.yml
+```
+
+Configuration supports default CI thresholds, disabled checks, and custom weights:
+
+```yaml
+fail_under: 85
+disabled_checks:
+  - activity
+weights:
+  readme: 25
+  tests: 20
+  github_actions: 20
+```
+
+See [examples/repopulse.yml](examples/repopulse.yml) for a complete example.
 
 ## Supported Checks
 

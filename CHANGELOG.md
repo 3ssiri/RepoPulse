@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Added optional `.repopulse.yml` configuration for disabled checks, custom weights, and default CI thresholds.
+- Added `schema_version` and config metadata to JSON reports.
+- Updated Typer, pytest, and Ruff dependency ranges.
+
 ## 0.1.0 - 2026-06-01
 
 - Initial RepoPulse CLI release.

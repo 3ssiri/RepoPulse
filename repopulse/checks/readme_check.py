@@ -1,3 +1,5 @@
+from typing import Literal
+
 from repopulse.models import CheckResult, FileItem
 from repopulse.utils import find_file
 
@@ -45,7 +47,7 @@ def run_readme_check(files: list[FileItem], content: str | None) -> CheckResult:
         else:
             recommendations.append(f"Document {labels[key]} in the README.")
 
-    status = "pass" if score >= 16 else "warn"
+    status: Literal["pass", "warn"] = "pass" if score >= 16 else "warn"
     return CheckResult(
         key="readme",
         title="README Quality",

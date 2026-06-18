@@ -1,3 +1,5 @@
+from typing import Literal
+
 from repopulse.models import CheckResult, FileItem
 from repopulse.utils import find_file
 
@@ -13,6 +15,7 @@ LOCKFILES = {
 
 
 def run_dependencies_check(files: list[FileItem]) -> CheckResult:
+    status: Literal["pass", "warn", "fail"]
     has_manifest = any(
         find_file(files, {name}) is not None
         for name in ("package.json", "pyproject.toml", "requirements.txt")

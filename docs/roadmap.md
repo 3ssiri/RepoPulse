@@ -13,7 +13,7 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 ## Maintainer Automation
 
 - Generate issue-ready recommendations from failed checks.
-- Support configurable score weights per project.
+- Expand configurable score weights with named profiles for strict CI, library projects, and documentation-heavy repositories.
 - Add comparison reports across releases or branches.
 - Provide templates for release readiness checks.
 

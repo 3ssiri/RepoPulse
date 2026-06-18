@@ -8,6 +8,7 @@ from repopulse.analyzer import build_health_report
 from repopulse.config import load_environment
 from repopulse.github_client import GitHubAPIError, GitHubClient
 from repopulse.report import render_json, render_markdown, render_summary, render_terminal
+from repopulse.settings import load_config
 from repopulse.url_parser import parse_github_url
 
 app = typer.Typer(help="Scan GitHub repositories and generate health reports.")
@@ -28,6 +29,7 @@ def scan(
     export: Path | None = typer.Option(None, "--export", help="Export report to a Markdown file."),
     output: Path | None = typer.Option(None, "--output", help="Write the selected output format to a file."),
     output_format: str = typer.Option("table", "--format", help="Output format: table, markdown, json, or summary."),
+    config: Path | None = typer.Option(None, "--config", help="Path to a RepoPulse YAML config file."),
     json_output: bool = typer.Option(False, "--json", help="Output report as JSON."),
     fail_under: int | None = typer.Option(None, "--fail-under", min=0, max=100, help="Exit with code 2 if score is below this value."),
     quiet: bool = typer.Option(False, "--quiet", help="Suppress progress messages and use compact output."),
@@ -40,10 +42,11 @@ def scan(
         selected_format = "json" if json_output else output_format.lower()
         if selected_format not in OUTPUT_FORMATS:
             raise ValueError("Invalid output format. Use table, markdown, json, or summary.")
+        scan_config = load_config(config)
         resolved_token = token or os.getenv("GITHUB_TOKEN")
         if not quiet and selected_format == "table":
             console.print(f"[bold]Scanning repository:[/bold] {owner}/{repo}")
-        report = build_health_report(GitHubClient(resolved_token), owner, repo)
+        report = build_health_report(GitHubClient(resolved_token), owner, repo, scan_config)
         if export:
             export.write_text(render_markdown(report), encoding="utf-8")
             if not quiet and selected_format == "table":
@@ -60,8 +63,9 @@ def scan(
                 render_terminal(report, console, verbose=verbose)
         else:
             console.print(rendered)
-        if fail_under is not None and report.total_score < fail_under:
-            console.print(f"[red]Score {report.total_score} is below required threshold {fail_under}.[/red]")
+        threshold = fail_under if fail_under is not None else scan_config.fail_under
+        if threshold is not None and score_percentage(report.total_score, report.max_score) < threshold:
+            console.print(f"[red]Score {report.total_score}/{report.max_score} is below required threshold {threshold}%.[/red]")
             raise typer.Exit(code=2)
     except (ValueError, GitHubAPIError) as error:
         console.print(f"[red]Error:[/red] {error}")
@@ -76,6 +80,10 @@ def render_output(report, selected_format: str) -> str:
     if selected_format == "summary":
         return render_summary(report)
     return render_summary(report)
+
+
+def score_percentage(score: int, max_score: int) -> int:
+    return round((score / max_score) * 100) if max_score > 0 else 0
 
 
 if __name__ == "__main__":
