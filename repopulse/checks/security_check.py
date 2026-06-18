@@ -1,8 +1,11 @@
+from typing import Literal
+
 from repopulse.models import CheckResult, FileItem
 from repopulse.utils import find_file
 
 
 def run_security_check(files: list[FileItem], workflow_contents: dict[str, str] | None = None) -> CheckResult:
+    status: Literal["pass", "warn", "fail"]
     workflow_contents = workflow_contents or {}
     has_security_policy = find_file(files, {"SECURITY.md"}) is not None
     has_dependabot = find_file(files, {"dependabot.yml", "dependabot.yaml"}) is not None

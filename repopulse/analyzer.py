@@ -15,7 +15,8 @@ from repopulse.checks import (
 )
 from repopulse.github_client import GitHubClient
 from repopulse.models import FileItem, HealthReport, RepositoryInfo
-from repopulse.scoring import calculate_total_score, get_grade
+from repopulse.scoring import apply_score_config, calculate_max_score, calculate_total_score, get_grade
+from repopulse.settings import RepoPulseConfig, config_to_public_dict
 from repopulse.utils import find_file
 
 
@@ -52,7 +53,8 @@ def file_items_from_tree(tree: list[dict]) -> list[FileItem]:
     return files
 
 
-def build_health_report(client: GitHubClient, owner: str, repo: str) -> HealthReport:
+def build_health_report(client: GitHubClient, owner: str, repo: str, config: RepoPulseConfig | None = None) -> HealthReport:
+    config = config or RepoPulseConfig()
     repo_data = client.get_repo(owner, repo)
     repository = repo_info_from_api(owner, repo, repo_data)
     files = file_items_from_tree(client.get_tree(owner, repo, repository.default_branch))
@@ -86,12 +88,16 @@ def build_health_report(client: GitHubClient, owner: str, repo: str) -> HealthRe
         run_dependencies_check(files),
         run_security_check(files, workflow_contents),
     ]
-    total_score = calculate_total_score(checks)
+    checks = apply_score_config(checks, config)
+    max_score = calculate_max_score(checks)
+    total_score = calculate_total_score(checks, max_score)
     recommendations = [item for check in checks for item in check.recommendations]
     return HealthReport(
         repository=repository,
         checks=checks,
         total_score=total_score,
-        grade=get_grade(total_score),
+        max_score=max_score,
+        grade=get_grade(total_score, max_score),
         recommendations=recommendations,
+        config=config_to_public_dict(config),
     )

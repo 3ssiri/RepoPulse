@@ -2,6 +2,8 @@
 
 RepoPulse produces a 100-point score from core checks and adds advisory recommendations from supplemental checks.
 
+The default score is 100 points. Projects can customize scored check weights or disable checks with `.repopulse.yml`.
+
 ## Core Scored Checks
 
 | Check | Points | What It Looks For |

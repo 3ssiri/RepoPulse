@@ -35,9 +35,11 @@ class CheckResult(BaseModel):
 
 
 class HealthReport(BaseModel):
+    schema_version: str = "1.0"
     repository: RepositoryInfo
     checks: list[CheckResult]
     total_score: int
     max_score: int = 100
     grade: str
     recommendations: list[str] = Field(default_factory=list)
+    config: dict = Field(default_factory=dict)

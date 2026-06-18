@@ -1,4 +1,5 @@
 from pathlib import PurePosixPath
+from typing import Literal
 
 from repopulse.models import CheckResult, FileItem
 from repopulse.utils import parse_json_content
@@ -34,6 +35,7 @@ def run_tests_check(
     else:
         score = 0
 
+    status: Literal["pass", "warn", "fail"]
     if score == 15:
         status = "pass"
         message = "Tests and a test command were detected."

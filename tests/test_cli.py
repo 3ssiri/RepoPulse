@@ -42,7 +42,7 @@ def sample_report(score: int = 78) -> HealthReport:
 
 
 def test_scan_writes_json_output_file(monkeypatch):
-    monkeypatch.setattr("repopulse.cli.build_health_report", lambda client, owner, repo: sample_report())
+    monkeypatch.setattr("repopulse.cli.build_health_report", lambda client, owner, repo, config: sample_report())
     output = Path("tests/.tmp-report.json")
 
     result = CliRunner().invoke(app, ["scan", "https://github.com/owner/repo", "--format", "json", "--output", str(output)])
@@ -55,7 +55,7 @@ def test_scan_writes_json_output_file(monkeypatch):
 
 
 def test_scan_fail_under_exits_nonzero(monkeypatch):
-    monkeypatch.setattr("repopulse.cli.build_health_report", lambda client, owner, repo: sample_report(score=74))
+    monkeypatch.setattr("repopulse.cli.build_health_report", lambda client, owner, repo, config: sample_report(score=74))
 
     result = CliRunner().invoke(app, ["scan", "https://github.com/owner/repo", "--fail-under", "75", "--quiet"])
 
