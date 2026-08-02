@@ -31,8 +31,10 @@ The project is early-stage, but it is designed around practical maintainer workf
 ## Features
 
 - Scan public GitHub repositories by URL.
+- Scan a local directory offline (`repopulse scan .`) without the GitHub API.
+- Emit GitHub-issue-ready recommendations with `--format issues`.
 - Scan private repositories with `--token` or `GITHUB_TOKEN`.
-- Fetch repository metadata and recursive file tree through the GitHub API.
+- Fetch repository metadata and recursive file tree through the GitHub API (remote scans).
 - Score repository health out of 100.
 - Render a Rich terminal report.
 - Export Markdown reports.
@@ -61,7 +63,13 @@ RepoPulse is built with:
 
 ## Installation
 
-Clone the repository and install it in editable mode:
+When published on PyPI:
+
+```bash
+pip install repopulse
+```
+
+Or clone and install from source:
 
 ```bash
 git clone https://github.com/3ssiri/RepoPulse.git
@@ -80,6 +88,7 @@ See [INSTALLATION.md](INSTALLATION.md) for full setup notes.
 ## Basic Usage
 
 ```bash
+repopulse scan .
 repopulse scan https://github.com/username/repository
 repopulse scan https://github.com/username/repository --export report.md
 repopulse scan https://github.com/username/repository --format json --output report.json

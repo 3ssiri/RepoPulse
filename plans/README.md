@@ -9,6 +9,9 @@ Generated 2026-08-02 against commit `bc427a8`. Three parallel workstreams for Re
 | 001 | Add GitHub Actions example + CI usage docs | P1 | S | — | agent-ci | DONE |
 | 002 | Named scoring profiles in config | P1 | M | — | agent-profiles | DONE |
 | 003 | Deeper tests + actions checks | P1 | M | — | agent-checks | DONE |
+| 004 | Release / publish readiness 0.2.0 | P1 | S | — | agent-publish | DONE |
+| 005 | Issue-ready recommendations format | P1 | S | — | agent-issues | DONE |
+| 006 | Local path scan | P1 | L | — | agent-local | DONE |
 
 Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`
 

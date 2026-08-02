@@ -1,4 +1,4 @@
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 from repopulse.checks import (
     run_actions_check,
@@ -14,8 +14,18 @@ from repopulse.checks import (
     run_tests_check,
 )
 from repopulse.github_client import GitHubClient
+from repopulse.local_source import (
+    iter_local_files,
+    read_local_text,
+    repository_info_from_path,
+)
 from repopulse.models import FileItem, HealthReport, RepositoryInfo
-from repopulse.scoring import apply_score_config, calculate_max_score, calculate_total_score, get_grade
+from repopulse.scoring import (
+    apply_score_config,
+    calculate_max_score,
+    calculate_total_score,
+    get_grade,
+)
 from repopulse.settings import RepoPulseConfig, config_to_public_dict
 from repopulse.utils import find_file
 
@@ -53,28 +63,19 @@ def file_items_from_tree(tree: list[dict]) -> list[FileItem]:
     return files
 
 
-def build_health_report(client: GitHubClient, owner: str, repo: str, config: RepoPulseConfig | None = None) -> HealthReport:
+def build_health_report_from_inputs(
+    repository: RepositoryInfo,
+    files: list[FileItem],
+    *,
+    readme_content: str | None,
+    gitignore_content: str | None,
+    package_content: str | None,
+    pyproject_content: str | None,
+    workflow_contents: dict[str, str],
+    config: RepoPulseConfig | None = None,
+) -> HealthReport:
+    """Run the shared check pipeline and build a HealthReport."""
     config = config or RepoPulseConfig()
-    repo_data = client.get_repo(owner, repo)
-    repository = repo_info_from_api(owner, repo, repo_data)
-    files = file_items_from_tree(client.get_tree(owner, repo, repository.default_branch))
-
-    readme_file = find_file(files, {"README", "README.md", "README.rst"})
-    gitignore_file = find_file(files, {".gitignore"})
-    package_json = find_file(files, {"package.json"})
-    pyproject = find_file(files, {"pyproject.toml"})
-    workflows = [file for file in files if file.type == "blob" and file.path.lower().startswith(".github/workflows/")]
-
-    readme_content = client.get_file_content(owner, repo, readme_file.path) if readme_file else None
-    gitignore_content = client.get_file_content(owner, repo, gitignore_file.path) if gitignore_file else None
-    package_content = client.get_file_content(owner, repo, package_json.path) if package_json else None
-    pyproject_content = client.get_file_content(owner, repo, pyproject.path) if pyproject else None
-    workflow_contents = {
-        workflow.path: content
-        for workflow in workflows
-        if (content := client.get_file_content(owner, repo, workflow.path)) is not None
-    }
-
     checks = [
         run_readme_check(files, readme_content),
         run_license_check(files),
@@ -100,4 +101,83 @@ def build_health_report(client: GitHubClient, owner: str, repo: str, config: Rep
         grade=get_grade(total_score, max_score),
         recommendations=recommendations,
         config=config_to_public_dict(config),
+    )
+
+
+def _load_content_inputs(
+    files: list[FileItem],
+    content_loader,
+) -> tuple[str | None, str | None, str | None, str | None, dict[str, str]]:
+    """Resolve standard content files via a path -> content callable."""
+    readme_file = find_file(files, {"README", "README.md", "README.rst"})
+    gitignore_file = find_file(files, {".gitignore"})
+    package_json = find_file(files, {"package.json"})
+    pyproject = find_file(files, {"pyproject.toml"})
+    workflows = [file for file in files if file.type == "blob" and file.path.lower().startswith(".github/workflows/")]
+
+    readme_content = content_loader(readme_file.path) if readme_file else None
+    gitignore_content = content_loader(gitignore_file.path) if gitignore_file else None
+    package_content = content_loader(package_json.path) if package_json else None
+    pyproject_content = content_loader(pyproject.path) if pyproject else None
+    workflow_contents = {
+        workflow.path: content
+        for workflow in workflows
+        if (content := content_loader(workflow.path)) is not None
+    }
+    return readme_content, gitignore_content, package_content, pyproject_content, workflow_contents
+
+
+def build_health_report(
+    client: GitHubClient,
+    owner: str,
+    repo: str,
+    config: RepoPulseConfig | None = None,
+) -> HealthReport:
+    config = config or RepoPulseConfig()
+    repo_data = client.get_repo(owner, repo)
+    repository = repo_info_from_api(owner, repo, repo_data)
+    files = file_items_from_tree(client.get_tree(owner, repo, repository.default_branch))
+
+    def load(path: str) -> str | None:
+        return client.get_file_content(owner, repo, path)
+
+    readme_content, gitignore_content, package_content, pyproject_content, workflow_contents = _load_content_inputs(
+        files, load
+    )
+    return build_health_report_from_inputs(
+        repository,
+        files,
+        readme_content=readme_content,
+        gitignore_content=gitignore_content,
+        package_content=package_content,
+        pyproject_content=pyproject_content,
+        workflow_contents=workflow_contents,
+        config=config,
+    )
+
+
+def build_local_health_report(root: Path, config: RepoPulseConfig | None = None) -> HealthReport:
+    """Scan a local directory without calling the GitHub API."""
+    root = root.resolve()
+    if not root.is_dir():
+        raise ValueError(f"Not a directory: {root}")
+    config = config or RepoPulseConfig()
+    files = iter_local_files(root)
+    repository = repository_info_from_path(root)
+
+    def load(path: str) -> str | None:
+        return read_local_text(root, path)
+
+    readme_content, gitignore_content, package_content, pyproject_content, workflow_contents = _load_content_inputs(
+        files, load
+    )
+    return build_health_report_from_inputs(
+        repository,
+        files,
+        readme_content=readme_content,
+        gitignore_content=gitignore_content,
+        package_content=package_content,
+        pyproject_content=pyproject_content,
+        workflow_contents=workflow_contents,
+        config=config,
     )

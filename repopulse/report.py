@@ -56,6 +56,58 @@ def render_summary(report: HealthReport) -> str:
     return "\n".join(lines)
 
 
+def render_issues(report: HealthReport) -> str:
+    """Render GitHub-issue-ready Markdown blocks for fail/warn checks and any with recommendations."""
+    repo = report.repository
+    full_name = repo.full_name
+    lines = [
+        f"# RepoPulse recommendations for {full_name}",
+        f"Score: {report.total_score}/{report.max_score} — {report.grade}",
+        "",
+    ]
+
+    actionable = [
+        check
+        for check in report.checks
+        if check.status in {"fail", "warn"} or check.recommendations
+    ]
+
+    if not actionable:
+        lines.append(
+            f"No open recommendations from RepoPulse for {full_name} "
+            f"(score {report.total_score}/{report.max_score} — {report.grade})."
+        )
+        return "\n".join(lines)
+
+    blocks: list[str] = []
+    for check in actionable:
+        block_lines = [
+            f"## [RepoPulse] {check.title}: {check.status}",
+            "",
+            f"**Repository:** {full_name}",
+            f"**Score impact:** {check.score}/{check.max_score}",
+            f"**Summary:** {check.message}",
+            "",
+            "### Action items",
+        ]
+        if check.recommendations:
+            block_lines.extend(f"- {item}" for item in check.recommendations)
+        else:
+            block_lines.append("- Review this check and improve the repository.")
+        block_lines.extend(
+            [
+                "",
+                "### Labels",
+                f"`repopulse`, `health-check`, `{check.key}`",
+            ]
+        )
+        blocks.append("\n".join(block_lines))
+
+    lines.append("\n\n---\n\n".join(blocks))
+    lines.append("")
+    return "\n".join(lines)
+
+
 def render_terminal(report: HealthReport, console: Console | None = None, verbose: bool = False) -> None:
     target = console or Console()
     repo = report.repository
