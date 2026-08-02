@@ -55,3 +55,32 @@ RepoPulse JSON output (`--format json` / `--json`) is intended for automation.
 - Object key order in JSON is **sorted** for stable diffs in automation.
 - Local scans set `repository.full_name` from git remote when possible (e.g. `owner/repo`); otherwise `local/<dirname>`.
 - Do not parse free-text `message` fields for control flow — use `key`, `status`, and scores.
+
+## Comparison JSON (`repopulse compare --format json`)
+
+Top-level `kind` is always `"comparison"`. Current `schema_version`: **`1.0`**.
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Document version (`1.0`). |
+| `kind` | string | Always `comparison`. |
+| `baseline_label` / `target_label` | string | Display labels. |
+| `baseline_repository` / `target_repository` | string | `full_name` from each scan. |
+| `baseline_score` / `target_score` | integer | Totals. |
+| `baseline_max_score` / `target_max_score` | integer | Max totals. |
+| `score_delta` | integer | `target_score - baseline_score`. |
+| `baseline_grade` / `target_grade` | string | Grades. |
+| `checks` | array | Per-check deltas (see below). |
+| `improved` / `regressed` / `unchanged` | array of string | Check keys. |
+| `config` | object | `{ "baseline": {...}, "target": {...} }`. |
+
+### `checks[]` delta object
+
+| Field | Type |
+|---|---|
+| `key` | string |
+| `title` | string |
+| `baseline_status` / `target_status` | `pass` \| `warn` \| `fail` \| null |
+| `baseline_score` / `target_score` | integer or null |
+| `score_delta` | integer |
+| `change` | `improved` \| `regressed` \| `unchanged` \| `added` \| `removed` |

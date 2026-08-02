@@ -45,8 +45,9 @@ The project is early-stage, but it is designed around practical maintainer workf
 - Print or write JSON reports.
 - Produce compact summaries for automation.
 - Fail CI jobs with `--fail-under`.
+- Compare two scans (`repopulse compare`) with score/check deltas and `--fail-on-regression`.
 - Drop-in GitHub Actions example for CI health gates ([examples/github-action-repopulse.yml](examples/github-action-repopulse.yml)).
-- Customize check weights and default thresholds with `.repopulse.yml` (optional named profiles: `strict`, `library`, `docs`).
+- Customize check weights and default thresholds with `.repopulse.yml` (optional named profiles: `strict`, `library`, `docs`, `release`).
 - Detect common sensitive file names without printing secret contents.
 - Add advisory dependency and security baseline recommendations.
 
@@ -99,6 +100,7 @@ repopulse scan https://github.com/username/repository --format json --output rep
 repopulse scan https://github.com/username/repository --fail-under 75
 repopulse scan https://github.com/username/repository --config .repopulse.yml
 repopulse scan https://github.com/username/private-repo --token YOUR_GITHUB_TOKEN
+repopulse compare ./checkout-main ./checkout-pr --fail-on-regression
 ```
 
 You can also set a token in the environment:

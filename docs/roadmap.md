@@ -14,7 +14,7 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 - ~~Generate issue-ready recommendations from failed checks.~~ Done — `--format issues`.
 - ~~Expand configurable score weights with named profiles.~~ Done — `strict` \| `library` \| `docs` \| `release`.
-- Add comparison reports across releases or branches.
+- ~~Add comparison reports across releases or branches.~~ Done — `repopulse compare <baseline> <target>` with `--fail-on-regression`.
 - ~~Provide templates for release readiness checks.~~ Done — `profile: release` and `examples/profiles/release.yml`.
 
 ## Security and Quality
@@ -33,4 +33,4 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 - Publish to PyPI (`pip install repopulse`).
 - Optional `gh issue create` integration from issues format.
-- Branch/tag score comparison (`scan` A vs B).
+- GitHub ref-aware compare (scan a remote tag/branch without local checkout).

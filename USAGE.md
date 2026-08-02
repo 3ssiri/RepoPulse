@@ -1,9 +1,10 @@
 # Usage Guide
 
-RepoPulse exposes one main command:
+RepoPulse exposes two main commands:
 
 ```bash
 repopulse scan <github_repo_url_or_local_path>
+repopulse compare <baseline> <target>
 ```
 
 ## Basic Scan
@@ -73,6 +74,36 @@ repopulse scan https://github.com/psf/requests --json
 ```
 
 `--json` is a shortcut for JSON output.
+
+## Compare two scans
+
+Diff health between two checkouts, branches, tags, or repositories. Useful for PR gates and release readiness:
+
+```bash
+# Two local checkouts (e.g. main vs PR worktree)
+repopulse compare ./checkout-main ./checkout-pr
+
+# Labels for readable output
+repopulse compare ./main ./pr --baseline-label main --target-label pr-42
+
+# Machine-readable
+repopulse compare ./main ./pr --format json --output delta.json
+repopulse compare ./main ./pr --format markdown --output delta.md
+repopulse compare ./main ./pr --format summary --quiet
+
+# Fail CI when health got worse
+repopulse compare ./main ./pr --fail-on-regression --quiet
+```
+
+| Flag | Purpose |
+|---|---|
+| `--format` | `table` (default), `markdown`, `json`, or `summary`. |
+| `--baseline-label` / `--target-label` | Display names in the report. |
+| `--fail-on-regression` | Exit code `2` if total score dropped or any check regressed. |
+| `--config` | Same YAML config applied to both sides. |
+| `--token` | GitHub token when either side is a remote URL. |
+
+Tip: check out two worktrees or clone two refs, then pass the directories to `compare`. Remote GitHub URLs compare each repo's default branch (ref-aware remote compare is on the later roadmap).
 
 ## CI Threshold
 

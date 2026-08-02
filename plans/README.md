@@ -13,6 +13,7 @@ Generated 2026-08-02 against commit `bc427a8`. Three parallel workstreams for Re
 | 005 | Issue-ready recommendations format | P1 | S | — | agent-issues | DONE |
 | 006 | Local path scan | P1 | L | — | agent-local | DONE |
 | 007 | Richer reports, security, release profile | P1 | M | 001–006 | orchestrator | DONE |
+| 008 | Compare two scans (branch/path score delta) | P1 | M | 007 | orchestrator | DONE |
 
 Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`
 
