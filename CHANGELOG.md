@@ -2,11 +2,16 @@
 
 ## Unreleased
 
+## 0.2.1 - 2026-08-02
+
+- Fixed broken Release workflow (invalid `secrets` in `if` caused cascading "workflow file issue" failures).
+- Release now runs **only on `v*` tags**: lint, test, build, twine check, attach assets to GitHub Release.
+- CI limited to `main` + pull requests; matrix Python 3.11/3.12; package build smoke on 3.11.
+- Modern packaging metadata: SPDX `license = "MIT"`, `license-files`, setuptools>=77 (removes license deprecation noise).
 - Richer Markdown reports (pass/warn/fail counts, attention sections, applied config).
-- Expanded security baseline: specific missing-item recommendations; extra scanner signals (Trivy, Semgrep, gitleaks, Bandit, OSV, …).
-- Added `release` scoring profile and `examples/profiles/release.yml`.
-- Documented JSON report contract (`docs/json-schema.md`) and private-token hygiene in USAGE.
-- Stable JSON key ordering for automation diffs.
+- Expanded security baseline recommendations and extra scanner signals.
+- Added `release` scoring profile and JSON contract docs.
+- Documented publishing steps in `docs/PUBLISHING.md`.
 
 ## 0.2.0 - 2026-08-02
 

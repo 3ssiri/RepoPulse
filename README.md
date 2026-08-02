@@ -23,7 +23,8 @@ It is built for developers who want a quick repository quality review from the t
 - [Roadmap](docs/roadmap.md)
 - [License](LICENSE)
 - [Changelog](CHANGELOG.md)
-- [GitHub Release 0.2.0](https://github.com/3ssiri/RepoPulse/releases/tag/v0.2.0)
+- [Publishing guide](docs/PUBLISHING.md)
+- [Releases](https://github.com/3ssiri/RepoPulse/releases)
 
 ## Why RepoPulse Matters
 
