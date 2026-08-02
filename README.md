@@ -11,16 +11,19 @@ It is built for developers who want a quick repository quality review from the t
 ## Quick Links
 
 - [Arabic README](README.ar.md)
+- [Spanish README](README.es-ES.md)
 - [Installation Guide](INSTALLATION.md)
 - [Usage Guide](USAGE.md)
 - [Requirements](REQUIREMENTS.md)
 - [Supported Checks](docs/checks.md)
+- [JSON report contract](docs/json-schema.md)
 - [Architecture](ARCHITECTURE.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
 - [Roadmap](docs/roadmap.md)
 - [License](LICENSE)
 - [Changelog](CHANGELOG.md)
+- [GitHub Release 0.2.0](https://github.com/3ssiri/RepoPulse/releases/tag/v0.2.0)
 
 ## Why RepoPulse Matters
 

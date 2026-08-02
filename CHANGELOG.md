@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Richer Markdown reports (pass/warn/fail counts, attention sections, applied config).
+- Expanded security baseline: specific missing-item recommendations; extra scanner signals (Trivy, Semgrep, gitleaks, Bandit, OSV, …).
+- Added `release` scoring profile and `examples/profiles/release.yml`.
+- Documented JSON report contract (`docs/json-schema.md`) and private-token hygiene in USAGE.
+- Stable JSON key ordering for automation diffs.
+
 ## 0.2.0 - 2026-08-02
 
 - Added offline local path scanning (`repopulse scan .` or any existing directory) with a shared check pipeline for GitHub and local sources.

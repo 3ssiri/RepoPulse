@@ -12,6 +12,7 @@ Generated 2026-08-02 against commit `bc427a8`. Three parallel workstreams for Re
 | 004 | Release / publish readiness 0.2.0 | P1 | S | — | agent-publish | DONE |
 | 005 | Issue-ready recommendations format | P1 | S | — | agent-issues | DONE |
 | 006 | Local path scan | P1 | L | — | agent-local | DONE |
+| 007 | Richer reports, security, release profile | P1 | M | 001–006 | orchestrator | DONE |
 
 Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`
 

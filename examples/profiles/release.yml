@@ -1,0 +1,2 @@
+# Release-readiness gate: high threshold, strong tests/CI/license weight.
+profile: release

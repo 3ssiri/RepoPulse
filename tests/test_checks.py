@@ -237,3 +237,28 @@ def test_security_check_detects_security_policy_and_codeql():
 
     assert result.status == "pass"
     assert "CodeQL" in result.message
+    assert result.recommendations == []
+
+
+def test_security_check_lists_missing_pieces_specifically():
+    files = [item("SECURITY.md")]
+    result = run_security_check(files, {})
+
+    assert result.status == "warn"
+    assert "SECURITY.md" in result.message
+    assert any("Dependabot" in item for item in result.recommendations)
+    assert any("scanning" in item.lower() or "CodeQL" in item for item in result.recommendations)
+
+
+def test_security_check_accepts_trivy_as_scanner():
+    files = [
+        item("SECURITY.md"),
+        item(".github/dependabot.yml"),
+        item(".github/workflows/security.yml"),
+    ]
+    workflows = {".github/workflows/security.yml": "run: trivy fs .\n"}
+
+    result = run_security_check(files, workflows)
+
+    assert result.status == "pass"
+    assert "trivy" in result.message.lower()
