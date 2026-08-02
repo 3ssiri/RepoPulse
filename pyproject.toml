@@ -36,9 +36,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=9.1.1",
-    "ruff>=0.15.18",
-    "mypy>=2.1.0",
-    "types-PyYAML>=6.0.12",
+    "ruff>=0.16.0",
+    "mypy>=2.3.0",
+    "types-PyYAML>=6.0.12.20260518",
     "build>=1.2.0"
 ]
 
@@ -55,6 +55,11 @@ Documentation = "https://github.com/3ssiri/RepoPulse/blob/main/USAGE.md"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["repopulse*"]
+
+[tool.ruff.lint]
+# B008: Typer uses Option()/Argument() in signatures by design.
+# FURB162: fromisoformat still needs Z->offset on Python 3.11.
+ignore = ["B008", "FURB162"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

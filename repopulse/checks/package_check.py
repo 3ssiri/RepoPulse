@@ -1,7 +1,6 @@
 from repopulse.models import CheckResult, FileItem
 from repopulse.utils import find_file, parse_json_content
 
-
 PYTHON_TOOLING = ("pytest", "ruff", "mypy", "tox", "nox", "black")
 
 
@@ -20,13 +19,9 @@ def run_package_check(
 
     python_tools = {tool for tool in PYTHON_TOOLING if pyproject_content and tool in pyproject_content.lower()}
 
-    if has_package_json and len(script_keys) >= 3:
+    if has_package_json and len(script_keys) >= 3 or has_pyproject and len(python_tools) >= 3:
         score = 5
-    elif has_pyproject and len(python_tools) >= 3:
-        score = 5
-    elif has_package_json and script_keys:
-        score = 3
-    elif has_pyproject or has_requirements:
+    elif has_package_json and script_keys or has_pyproject or has_requirements:
         score = 3
     else:
         score = 0

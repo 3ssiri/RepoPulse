@@ -1,5 +1,6 @@
-from typer.testing import CliRunner
 from pathlib import Path
+
+from typer.testing import CliRunner
 
 from repopulse.cli import app
 from repopulse.models import CheckResult, HealthReport, RepositoryInfo
