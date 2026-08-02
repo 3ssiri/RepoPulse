@@ -37,7 +37,7 @@ dependencies = [
 dev = [
     "pytest>=9.1.0",
     "ruff>=0.15.18",
-    "mypy>=2.1.0",
+    "mypy>=2.3.0",
     "types-PyYAML>=6.0.12",
     "build>=1.2.0"
 ]
