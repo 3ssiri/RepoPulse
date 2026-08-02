@@ -36,8 +36,10 @@ def test_render_markdown_contains_score_and_recommendations():
     markdown = render_markdown(report)
 
     assert "# RepoPulse Health Report" in markdown
-    assert "**78 / 100 - Good**" in markdown
+    assert "**78 / 100 (78%) - Good**" in markdown
     assert "Add a LICENSE file." in markdown
+    assert "## Attention needed" in markdown
+    assert "schema `1.0`" in markdown
 
 
 def test_render_json_is_pretty_json():

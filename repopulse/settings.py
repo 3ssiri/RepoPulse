@@ -49,6 +49,21 @@ PROFILES: dict[str, dict[str, Any]] = {
             "package_scripts": 0,
         },
     },
+    # High bar before cutting a release: tests + CI + license first.
+    "release": {
+        "fail_under": 90,
+        "weights": {
+            "readme": 15,
+            "license": 15,
+            "gitignore": 5,
+            "tests": 25,
+            "github_actions": 20,
+            "activity": 5,
+            "sensitive_files": 10,
+            "structure": 5,
+            "package_scripts": 0,
+        },
+    },
 }
 
 

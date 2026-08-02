@@ -17,6 +17,7 @@ profile: strict
 | `strict` | 85 | CI gate preset; tests and GitHub Actions at 20 each. |
 | `library` | 75 | Higher tests/license; lower activity; `package_scripts` weight 0. |
 | `docs` | 70 | README at 35; `package_scripts` weight 0. |
+| `release` | 90 | Release readiness; tests 25, Actions 20, license 15. |
 
 Overrides when a profile is set:
 
@@ -47,7 +48,7 @@ Advisory checks currently use `max_score=0`. They do not change the 100-point sc
 | Check | What It Looks For |
 |---|---|
 | Dependencies | Dependency manifest, lockfile, and Dependabot configuration. |
-| Security Baseline | `SECURITY.md`, Dependabot, and CodeQL workflow. |
+| Security Baseline | `SECURITY.md`, Dependabot, CodeQL and other scanners (Trivy, Semgrep, gitleaks, …). Per-gap recommendations. |
 
 ## Sensitive File Safety
 

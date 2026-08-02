@@ -130,7 +130,7 @@ Supported keys:
 
 | Key | Purpose |
 |---|---|
-| `profile` | Named preset: `strict`, `library`, or `docs`. Optional. |
+| `profile` | Named preset: `strict`, `library`, `docs`, or `release`. Optional. |
 | `fail_under` | Default percentage threshold used when `--fail-under` is not provided. |
 | `disabled_checks` | List of check keys to exclude from the report and score. |
 | `weights` | Mapping of scored check keys to custom point values. |
@@ -148,8 +148,9 @@ profile: strict
 | `strict` | 85 | High bar for CI gates (tests + Actions weighted higher). |
 | `library` | 75 | Packaging and tests over recent activity; `package_scripts` weight 0. |
 | `docs` | 70 | Documentation-heavy repos; README weight 35; `package_scripts` weight 0. |
+| `release` | 90 | Release readiness: tests, CI, and license weighted highest. |
 
-Ready-made files: `examples/profiles/strict.yml`, `library.yml`, `docs.yml`.
+Ready-made files: `examples/profiles/strict.yml`, `library.yml`, `docs.yml`, `release.yml`.
 
 ### Override rules (when `profile` is set)
 
@@ -207,6 +208,20 @@ Or:
 ```bash
 GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/private-repo
 ```
+
+### Token hygiene (important)
+
+- Prefer environment variables or CI secrets over pasting tokens into shell history.
+- Use a token with the **minimum** scope needed (private repo read; avoid admin scopes).
+- Never commit tokens to the repository or put them in issue reports.
+- For local offline checks of a checked-out private repo, use `repopulse scan .` — no GitHub token required.
+- RepoPulse never prints sensitive file **contents**; it only reports matching file **names**.
+
+## JSON contract
+
+Machine-readable reports use a stable top-level `schema_version` field (currently `1.0`).
+
+See [docs/json-schema.md](docs/json-schema.md) for the field list and compatibility rules.
 
 ## Exit Codes
 

@@ -113,6 +113,19 @@ def test_unknown_profile_raises(tmp_path):
         load_config(config_path)
 
 
+def test_profile_release_loads_high_threshold(tmp_path):
+    config_path = tmp_path / ".repopulse.yml"
+    config_path.write_text("profile: release\n", encoding="utf-8")
+
+    config = load_config(config_path)
+
+    assert config.profile == "release"
+    assert config.fail_under == 90
+    assert config.weights["tests"] == 25
+    assert config.weights["github_actions"] == 20
+    assert sum(config.weights.values()) == 100
+
+
 def test_no_profile_identical_empty_defaults(tmp_path):
     missing = load_config(tmp_path / "missing.yml")
     empty_file = tmp_path / ".repopulse.yml"
