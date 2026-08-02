@@ -39,7 +39,8 @@ The project is early-stage, but it is designed around practical maintainer workf
 - Print or write JSON reports.
 - Produce compact summaries for automation.
 - Fail CI jobs with `--fail-under`.
-- Customize check weights and default thresholds with `.repopulse.yml`.
+- Drop-in GitHub Actions example for CI health gates ([examples/github-action-repopulse.yml](examples/github-action-repopulse.yml)).
+- Customize check weights and default thresholds with `.repopulse.yml` (optional named profiles: `strict`, `library`, `docs`).
 - Detect common sensitive file names without printing secret contents.
 - Add advisory dependency and security baseline recommendations.
 
@@ -98,7 +99,7 @@ See [USAGE.md](USAGE.md) for all options and examples.
 ## OSS Maintainer Use Cases
 
 - Run repository health checks before releases.
-- Add a `--fail-under` threshold to CI for project quality gates.
+- Add a `--fail-under` threshold to CI for project quality gates (see [examples/github-action-repopulse.yml](examples/github-action-repopulse.yml) and [USAGE.md](USAGE.md#using-repopulse-in-github-actions)).
 - Export Markdown reports for issue triage or maintainer handoff.
 - Export JSON for dashboards, bots, or future AI-assisted review workflows.
 - Audit public or private repositories without printing secret contents.

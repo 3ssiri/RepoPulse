@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added GitHub Actions example for CI health gates (`examples/github-action-repopulse.yml`).
+- Added named scoring profiles (`strict`, `library`, `docs`) via `profile` in `.repopulse.yml`, with user overrides for weights, disabled checks, and fail_under.
+- Deepened Tests and GitHub Actions checks with framework-aware and CI-substance heuristics (still content-light, max 15 each).
 - Added optional `.repopulse.yml` configuration for disabled checks, custom weights, and default CI thresholds.
 - Added `schema_version` and config metadata to JSON reports.
 - Updated Typer, pytest, and Ruff dependency ranges.

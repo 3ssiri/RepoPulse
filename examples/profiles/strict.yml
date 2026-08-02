@@ -1,0 +1,3 @@
+# Built-in high bar for CI gates.
+# fail_under: 85; weights sum to 100 across scored checks.
+profile: strict

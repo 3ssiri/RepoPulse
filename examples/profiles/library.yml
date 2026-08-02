@@ -1,0 +1,3 @@
+# Built-in profile for libraries: tests and license matter more than activity.
+# fail_under: 75; package_scripts weight is 0.
+profile: library
