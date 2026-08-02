@@ -3,7 +3,7 @@
 RepoPulse exposes one main command:
 
 ```bash
-repopulse scan <github_repo_url>
+repopulse scan <github_repo_url_or_local_path>
 ```
 
 ## Basic Scan
@@ -13,6 +13,20 @@ repopulse scan https://github.com/psf/requests
 ```
 
 This prints a Rich table with repository metadata, checks, score, grade, and recommendations.
+
+## Local Path Scan
+
+Scan a directory on disk without calling the GitHub API (works offline, no token, no rate limits):
+
+```bash
+repopulse scan .
+repopulse scan ./my-project
+repopulse scan /path/to/repo --format summary --quiet
+```
+
+When the argument is an existing directory, RepoPulse walks the tree, reads key files, and reuses the same health checks as remote scans. Git metadata (default branch, last commit date, GitHub remote) is used when available; otherwise safe defaults apply.
+
+If the argument is not an existing directory, it is treated as a GitHub URL (same as before).
 
 ## Markdown Export
 
@@ -31,6 +45,8 @@ repopulse scan https://github.com/psf/requests --format table
 repopulse scan https://github.com/psf/requests --format summary
 repopulse scan https://github.com/psf/requests --format markdown
 repopulse scan https://github.com/psf/requests --format json
+repopulse scan https://github.com/psf/requests --format issues
+repopulse scan . --format issues
 ```
 
 Available formats:
@@ -41,6 +57,7 @@ Available formats:
 | `summary` | Compact output for automation. |
 | `markdown` | Markdown report text. |
 | `json` | Machine-readable JSON. |
+| `issues` | GitHub-issue-ready Markdown blocks for fail/warn checks (paste into new issues). |
 
 ## Write Output to a File
 

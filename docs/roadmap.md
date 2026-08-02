@@ -4,7 +4,7 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 ## Near Term
 
-- Publish installation-ready releases.
+- Publish installation-ready releases. (Partial: version `0.2.0`, release workflow, and packaging docs ready; first PyPI upload still pending.)
 - Expand check coverage for common Python, JavaScript, and documentation patterns.
 - Add richer Markdown reports for maintainers and contributors.
 - Improve JSON output stability for automation.

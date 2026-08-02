@@ -2,12 +2,17 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-08-02
+
+- Added offline local path scanning (`repopulse scan .` or any existing directory) with a shared check pipeline for GitHub and local sources.
+- Added `--format issues` for GitHub-issue-ready Markdown blocks from fail/warn checks.
 - Added GitHub Actions example for CI health gates (`examples/github-action-repopulse.yml`).
 - Added named scoring profiles (`strict`, `library`, `docs`) via `profile` in `.repopulse.yml`, with user overrides for weights, disabled checks, and fail_under.
 - Deepened Tests and GitHub Actions checks with framework-aware and CI-substance heuristics (still content-light, max 15 each).
 - Added optional `.repopulse.yml` configuration for disabled checks, custom weights, and default CI thresholds.
 - Added `schema_version` and config metadata to JSON reports.
 - Updated Typer, pytest, and Ruff dependency ranges.
+- Release packaging prep: version `0.2.0`, `python -m build` support, and GitHub release workflow for sdist/wheel artifacts (optional PyPI publish when `PYPI_API_TOKEN` is set).
 
 ## 0.1.0 - 2026-06-01
 

@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "repopulse"
-version = "0.1.0"
+version = "0.2.0"
 description = "A CLI tool that analyzes GitHub repository health and generates quality reports."
 authors = [{ name = "Ali Assiri" }]
 readme = "README.md"
@@ -34,7 +38,8 @@ dev = [
     "pytest>=9.1.0",
     "ruff>=0.15.18",
     "mypy>=2.1.0",
-    "types-PyYAML>=6.0.12"
+    "types-PyYAML>=6.0.12",
+    "build>=1.2.0"
 ]
 
 [project.scripts]
@@ -46,6 +51,10 @@ Repository = "https://github.com/3ssiri/RepoPulse"
 Issues = "https://github.com/3ssiri/RepoPulse/issues"
 Changelog = "https://github.com/3ssiri/RepoPulse/blob/main/CHANGELOG.md"
 Documentation = "https://github.com/3ssiri/RepoPulse/blob/main/USAGE.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["repopulse*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

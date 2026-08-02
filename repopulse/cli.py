@@ -4,17 +4,23 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from repopulse.analyzer import build_health_report
+from repopulse.analyzer import build_health_report, build_local_health_report
 from repopulse.config import load_environment
 from repopulse.github_client import GitHubAPIError, GitHubClient
-from repopulse.report import render_json, render_markdown, render_summary, render_terminal
+from repopulse.report import (
+    render_issues,
+    render_json,
+    render_markdown,
+    render_summary,
+    render_terminal,
+)
 from repopulse.settings import load_config
 from repopulse.url_parser import parse_github_url
 
 app = typer.Typer(help="Scan GitHub repositories and generate health reports.")
 console = Console()
 
-OUTPUT_FORMATS = {"table", "markdown", "json", "summary"}
+OUTPUT_FORMATS = {"table", "markdown", "json", "summary", "issues"}
 
 
 @app.callback()
@@ -24,29 +30,48 @@ def main():
 
 @app.command()
 def scan(
-    url: str,
+    url: str = typer.Argument(..., help="GitHub repository URL or local directory path."),
     token: str | None = typer.Option(None, help="GitHub token for private repositories."),
     export: Path | None = typer.Option(None, "--export", help="Export report to a Markdown file."),
     output: Path | None = typer.Option(None, "--output", help="Write the selected output format to a file."),
-    output_format: str = typer.Option("table", "--format", help="Output format: table, markdown, json, or summary."),
+    output_format: str = typer.Option(
+        "table",
+        "--format",
+        help="Output format: table, markdown, json, summary, or issues.",
+    ),
     config: Path | None = typer.Option(None, "--config", help="Path to a RepoPulse YAML config file."),
     json_output: bool = typer.Option(False, "--json", help="Output report as JSON."),
-    fail_under: int | None = typer.Option(None, "--fail-under", min=0, max=100, help="Exit with code 2 if score is below this value."),
+    fail_under: int | None = typer.Option(
+        None,
+        "--fail-under",
+        min=0,
+        max=100,
+        help="Exit with code 2 if score is below this value.",
+    ),
     quiet: bool = typer.Option(False, "--quiet", help="Suppress progress messages and use compact output."),
     verbose: bool = typer.Option(False, "--verbose", help="Show all recommendations in table output."),
 ):
-    """Scan a GitHub repository and generate a health report."""
+    """Scan a GitHub repository or local directory and generate a health report."""
     load_environment()
     try:
-        owner, repo = parse_github_url(url)
         selected_format = "json" if json_output else output_format.lower()
         if selected_format not in OUTPUT_FORMATS:
-            raise ValueError("Invalid output format. Use table, markdown, json, or summary.")
+            raise ValueError("Invalid output format. Use table, markdown, json, summary, or issues.")
         scan_config = load_config(config)
-        resolved_token = token or os.getenv("GITHUB_TOKEN")
-        if not quiet and selected_format == "table":
-            console.print(f"[bold]Scanning repository:[/bold] {owner}/{repo}")
-        report = build_health_report(GitHubClient(resolved_token), owner, repo, scan_config)
+
+        target_path = Path(url)
+        if target_path.exists() and target_path.is_dir():
+            resolved = target_path.resolve()
+            if not quiet and selected_format == "table":
+                console.print(f"[bold]Scanning local path:[/bold] {resolved}")
+            report = build_local_health_report(resolved, scan_config)
+        else:
+            owner, repo = parse_github_url(url)
+            resolved_token = token or os.getenv("GITHUB_TOKEN")
+            if not quiet and selected_format == "table":
+                console.print(f"[bold]Scanning repository:[/bold] {owner}/{repo}")
+            report = build_health_report(GitHubClient(resolved_token), owner, repo, scan_config)
+
         if export:
             export.write_text(render_markdown(report), encoding="utf-8")
             if not quiet and selected_format == "table":
@@ -65,7 +90,9 @@ def scan(
             console.print(rendered)
         threshold = fail_under if fail_under is not None else scan_config.fail_under
         if threshold is not None and score_percentage(report.total_score, report.max_score) < threshold:
-            console.print(f"[red]Score {report.total_score}/{report.max_score} is below required threshold {threshold}%.[/red]")
+            console.print(
+                f"[red]Score {report.total_score}/{report.max_score} is below required threshold {threshold}%.[/red]"
+            )
             raise typer.Exit(code=2)
     except (ValueError, GitHubAPIError) as error:
         console.print(f"[red]Error:[/red] {error}")
@@ -79,6 +106,8 @@ def render_output(report, selected_format: str) -> str:
         return render_markdown(report)
     if selected_format == "summary":
         return render_summary(report)
+    if selected_format == "issues":
+        return render_issues(report)
     return render_summary(report)
 
 
