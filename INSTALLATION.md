@@ -9,21 +9,29 @@ This guide explains how to install RepoPulse for normal use and for development.
 - Internet access to reach `api.github.com`.
 - A GitHub token for private repositories or higher API limits.
 
+## Install from a GitHub Release (recommended today)
+
+```bash
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.2.1/repopulse-0.2.1-py3-none-any.whl
+```
+
+See [docs/PUBLISHING.md](docs/PUBLISHING.md) for tagging and building releases.
+
 ## Install from PyPI
 
-After the first published release is available on PyPI:
+After the package is published to PyPI:
 
 ```bash
 pip install repopulse
 ```
 
-Verify the command is available:
+If the package is not on PyPI yet, use a GitHub Release wheel or the source install below.
+
+Verify:
 
 ```bash
 repopulse --help
 ```
-
-If the package is not yet on PyPI, use the source install below.
 
 ## Install From Source
 

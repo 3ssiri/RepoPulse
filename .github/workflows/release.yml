@@ -1,3 +1,4 @@
+# Builds package artifacts on version tags (v*) only — not on ordinary branch pushes.
 name: Release
 
 on:
@@ -7,32 +8,50 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
-      - name: Install build tools
+      - name: Install tools
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build
+          python -m pip install "build>=1.2" "twine>=6"
+          python -m pip install -e ".[dev]"
+
+      - name: Lint and test
+        run: |
+          ruff check .
+          pytest -q
 
       - name: Build sdist and wheel
         run: python -m build
 
-      - name: Upload distribution artifacts
+      - name: Twine check
+        run: python -m twine check dist/*
+
+      - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
-          path: dist/
+          path: dist/*
+          if-no-files-found: error
 
-  # Publish is manual: download artifacts from this workflow, then
-  #   twine upload dist/*   (requires PYPI_API_TOKEN)
-  # or add a second workflow that uses pypa/gh-action-pypi-publish when ready.
+      - name: Attach assets to GitHub Release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
