@@ -1,6 +1,6 @@
-from repopulse.checks.gitignore_check import run_gitignore_check
 from repopulse.checks.actions_check import run_actions_check
 from repopulse.checks.dependencies_check import run_dependencies_check
+from repopulse.checks.gitignore_check import run_gitignore_check
 from repopulse.checks.package_check import run_package_check
 from repopulse.checks.readme_check import run_readme_check
 from repopulse.checks.security_check import run_security_check
@@ -97,6 +97,119 @@ def test_tests_check_scores_python_pytest_configuration():
 
     assert result.status == "pass"
     assert result.score == 15
+    assert "pytest" in result.message.lower()
+
+
+def test_tests_check_detects_vitest_via_package_json():
+    files = [item("src/app.test.ts"), item("package.json")]
+    package = """
+    {
+      "scripts": {"test": "vitest run"},
+      "devDependencies": {"vitest": "^1.0.0"}
+    }
+    """
+
+    result = run_tests_check(files, package_json_content=package)
+
+    assert result.status == "pass"
+    assert result.score == 15
+    assert "vitest" in result.message.lower()
+
+
+def test_tests_check_detects_jest_via_package_json():
+    files = [item("__tests__/app.spec.js"), item("package.json")]
+    package = """
+    {
+      "scripts": {"test": "jest"},
+      "devDependencies": {"jest": "^29.0.0"}
+    }
+    """
+
+    result = run_tests_check(files, package_json_content=package)
+
+    assert result.status == "pass"
+    assert result.score == 15
+    assert "jest" in result.message.lower()
+
+
+def test_tests_check_conftest_signals_pytest_framework():
+    files = [
+        item("tests/test_app.py"),
+        item("tests/conftest.py"),
+    ]
+
+    result = run_tests_check(files)
+
+    # Dir + files, no package/pytest.ini command → 12; conftest labels framework.
+    assert result.score == 12
+    assert result.status == "warn"
+    assert "pytest" in result.message.lower()
+
+
+def test_tests_check_pytest_ini_counts_as_test_command():
+    files = [
+        item("tests/test_app.py"),
+        item("tests/conftest.py"),
+        item("pytest.ini"),
+    ]
+
+    result = run_tests_check(files)
+
+    assert result.score == 15
+    assert result.status == "pass"
+    assert "pytest" in result.message.lower()
+
+
+def test_tests_check_framework_config_only_scores_four():
+    files = [item("pyproject.toml")]
+    pyproject = """
+    [project.optional-dependencies]
+    dev = ["pytest"]
+
+    [tool.pytest.ini_options]
+    testpaths = ["tests"]
+    """
+
+    result = run_tests_check(files, pyproject_content=pyproject)
+
+    assert result.score == 4
+    assert result.status == "warn"
+    assert "pytest" in result.message.lower()
+
+
+def test_actions_check_workflows_only_scores_six():
+    files = [item(".github/workflows/noop.yml")]
+    workflows = {".github/workflows/noop.yml": "jobs:\n  greet:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hello\n"}
+
+    result = run_actions_check(files, workflows)
+
+    assert result.score == 6
+    assert result.status == "warn"
+
+
+def test_actions_check_tests_without_quality_scores_twelve():
+    files = [item(".github/workflows/ci.yml")]
+    workflows = {
+        ".github/workflows/ci.yml": "on:\n  push:\njobs:\n  test:\n    steps:\n      - run: python -m pytest\n"
+    }
+
+    result = run_actions_check(files, workflows)
+
+    assert result.score == 12
+    assert result.status == "pass"
+    assert "tests" in result.message.lower()
+
+
+def test_actions_check_quality_only_scores_ten():
+    files = [item(".github/workflows/lint.yml")]
+    workflows = {
+        ".github/workflows/lint.yml": "jobs:\n  quality:\n    steps:\n      - run: ruff check .\n      - run: eslint src\n"
+    }
+
+    result = run_actions_check(files, workflows)
+
+    assert result.score == 10
+    assert result.status == "warn"
 
 
 def test_dependencies_check_rewards_lockfile_and_dependabot():

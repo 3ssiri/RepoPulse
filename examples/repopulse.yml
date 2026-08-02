@@ -1,3 +1,7 @@
+# Custom config example (no named profile).
+# For presets, see examples/profiles/ (strict, library, docs)
+# or set `profile: strict` and optionally override weights / disabled_checks.
+
 fail_under: 85
 
 disabled_checks:

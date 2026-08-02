@@ -1,0 +1,3 @@
+# Built-in profile for documentation-heavy repositories.
+# fail_under: 70; readme weight is 35; package_scripts weight is 0.
+profile: docs

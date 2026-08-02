@@ -8,12 +8,12 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 - Expand check coverage for common Python, JavaScript, and documentation patterns.
 - Add richer Markdown reports for maintainers and contributors.
 - Improve JSON output stability for automation.
-- Add examples for running RepoPulse in GitHub Actions.
+- ~~Add examples for running RepoPulse in GitHub Actions.~~ Done — see `examples/github-action-repopulse.yml` and USAGE.md CI section.
 
 ## Maintainer Automation
 
 - Generate issue-ready recommendations from failed checks.
-- Expand configurable score weights with named profiles for strict CI, library projects, and documentation-heavy repositories.
+- ~~Expand configurable score weights with named profiles for strict CI, library projects, and documentation-heavy repositories.~~ Done — `profile: strict|library|docs` in `.repopulse.yml`.
 - Add comparison reports across releases or branches.
 - Provide templates for release readiness checks.
 
