@@ -3,7 +3,7 @@ import json
 from rich.console import Console
 from rich.table import Table
 
-from repopulse.models import HealthReport
+from repopulse.models import ComparisonReport, HealthReport
 
 
 def _score_percent(report: HealthReport) -> int:
@@ -194,3 +194,125 @@ def render_terminal(report: HealthReport, console: Console | None = None, verbos
             target.print(f"{index}. {recommendation}")
         if not verbose and len(report.recommendations) > 3:
             target.print(f"...and {len(report.recommendations) - 3} more. Use --verbose to show all.")
+
+
+def _delta_sign(value: int) -> str:
+    if value > 0:
+        return f"+{value}"
+    return str(value)
+
+
+def render_comparison_markdown(comparison: ComparisonReport) -> str:
+    """Maintainer-friendly Markdown comparison of two scans."""
+    lines = [
+        "# RepoPulse Comparison Report",
+        "",
+        f"> schema `{comparison.schema_version}` · baseline **{comparison.baseline_label}** → target **{comparison.target_label}**",
+        "",
+        "## Score",
+        "| | Baseline | Target | Delta |",
+        "|---|---:|---:|---:|",
+        (
+            f"| Score | {comparison.baseline_score}/{comparison.baseline_max_score} "
+            f"| {comparison.target_score}/{comparison.target_max_score} "
+            f"| {_delta_sign(comparison.score_delta)} |"
+        ),
+        (
+            f"| Grade | {comparison.baseline_grade} | {comparison.target_grade} | |"
+        ),
+        "",
+        f"- **Improved:** {len(comparison.improved)}"
+        + (f" (`{', '.join(comparison.improved)}`)" if comparison.improved else " (—)"),
+        f"- **Regressed:** {len(comparison.regressed)}"
+        + (f" (`{', '.join(comparison.regressed)}`)" if comparison.regressed else " (—)"),
+        f"- **Unchanged:** {len(comparison.unchanged)}",
+        "",
+        "## Checks",
+        "| Check | Baseline | Target | Score Δ | Change |",
+        "|---|---|---|---:|---|",
+    ]
+    for check in comparison.checks:
+        base = f"{check.baseline_status or '—'} ({check.baseline_score if check.baseline_score is not None else '—'})"
+        tgt = f"{check.target_status or '—'} ({check.target_score if check.target_score is not None else '—'})"
+        lines.append(
+            f"| {check.title} (`{check.key}`) | {base} | {tgt} | {_delta_sign(check.score_delta)} | {check.change} |"
+        )
+    lines.append("")
+    if comparison.regressed:
+        lines.extend(["## Regressions", ""])
+        for key in comparison.regressed:
+            match = next((c for c in comparison.checks if c.key == key), None)
+            if match:
+                lines.append(
+                    f"- **{match.title}** (`{key}`): "
+                    f"{match.baseline_status or '—'} → {match.target_status or '—'} "
+                    f"({_delta_sign(match.score_delta)})"
+                )
+        lines.append("")
+    return "\n".join(lines)
+
+
+def render_comparison_json(comparison: ComparisonReport) -> str:
+    return json.dumps(comparison.model_dump(), indent=2, ensure_ascii=False, sort_keys=True)
+
+
+def render_comparison_summary(comparison: ComparisonReport) -> str:
+    direction = "up" if comparison.score_delta > 0 else "down" if comparison.score_delta < 0 else "flat"
+    lines = [
+        (
+            f"{comparison.baseline_label} → {comparison.target_label}: "
+            f"{comparison.baseline_score} → {comparison.target_score} "
+            f"({_delta_sign(comparison.score_delta)}, {direction})"
+        ),
+        f"Improved: {len(comparison.improved)} | Regressed: {len(comparison.regressed)} | Unchanged: {len(comparison.unchanged)}",
+    ]
+    if comparison.regressed:
+        lines.append("Regressions: " + ", ".join(comparison.regressed))
+    if comparison.improved:
+        lines.append("Improvements: " + ", ".join(comparison.improved))
+    return "\n".join(lines)
+
+
+def render_comparison_terminal(comparison: ComparisonReport, console: Console | None = None) -> None:
+    target = console or Console()
+    delta_style = "green" if comparison.score_delta > 0 else "red" if comparison.score_delta < 0 else "white"
+    target.print(
+        f"[bold]RepoPulse Comparison[/bold]: "
+        f"[cyan]{comparison.baseline_label}[/cyan] → [cyan]{comparison.target_label}[/cyan]"
+    )
+    target.print(
+        f"Score: {comparison.baseline_score}/{comparison.baseline_max_score} "
+        f"→ {comparison.target_score}/{comparison.target_max_score} "
+        f"([{delta_style}]{_delta_sign(comparison.score_delta)}[/{delta_style}]) "
+        f"| {comparison.baseline_grade} → {comparison.target_grade}"
+    )
+    target.print(
+        f"Improved: [green]{len(comparison.improved)}[/green] | "
+        f"Regressed: [red]{len(comparison.regressed)}[/red] | "
+        f"Unchanged: {len(comparison.unchanged)}"
+    )
+
+    table = Table(title="Check deltas")
+    table.add_column("Check")
+    table.add_column("Baseline")
+    table.add_column("Target")
+    table.add_column("Δ", justify="right")
+    table.add_column("Change")
+    for check in comparison.checks:
+        change_style = {
+            "improved": "green",
+            "regressed": "red",
+            "added": "cyan",
+            "removed": "yellow",
+            "unchanged": "dim",
+        }.get(check.change, "white")
+        base = f"{check.baseline_status or '—'} ({check.baseline_score if check.baseline_score is not None else '—'})"
+        tgt = f"{check.target_status or '—'} ({check.target_score if check.target_score is not None else '—'})"
+        table.add_row(
+            check.title,
+            base,
+            tgt,
+            _delta_sign(check.score_delta),
+            f"[{change_style}]{check.change}[/{change_style}]",
+        )
+    target.print(table)

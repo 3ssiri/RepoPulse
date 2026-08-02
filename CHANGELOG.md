@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added `repopulse compare <baseline> <target>` to diff two health scans (local paths and/or GitHub URLs).
+- Comparison formats: `table`, `markdown`, `json`, `summary`; labels via `--baseline-label` / `--target-label`.
+- CI gate: `--fail-on-regression` exits with code 2 when the score drops or any check regresses.
+
 ## 0.2.1 - 2026-08-02
 
 - Fixed broken Release workflow (invalid `secrets` in `if` caused cascading "workflow file issue" failures).
