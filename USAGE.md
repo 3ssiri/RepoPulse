@@ -1,10 +1,11 @@
 # Usage Guide
 
-RepoPulse exposes two main commands:
+RepoPulse exposes these main commands:
 
 ```bash
 repopulse scan <github_repo_url_or_local_path>
 repopulse compare <baseline> <target>
+repopulse create-issues <github_repo_url_or_local_path>
 ```
 
 ## Basic Scan
@@ -14,6 +15,18 @@ repopulse scan https://github.com/psf/requests
 ```
 
 This prints a Rich table with repository metadata, checks, score, grade, and recommendations.
+
+## Scan a specific branch or tag (no local checkout)
+
+Pass a tree or release URL, or use `--ref`:
+
+```bash
+repopulse scan https://github.com/psf/requests/tree/main
+repopulse scan https://github.com/psf/requests/releases/tag/v2.32.0
+repopulse scan https://github.com/psf/requests --ref main
+```
+
+`--ref` overrides a ref embedded in the URL when both are set.
 
 ## Local Path Scan
 
@@ -58,7 +71,7 @@ Available formats:
 | `summary` | Compact output for automation. |
 | `markdown` | Markdown report text. |
 | `json` | Machine-readable JSON. |
-| `issues` | GitHub-issue-ready Markdown blocks for fail/warn checks (paste into new issues). |
+| `issues` | GitHub-issue-ready Markdown blocks for fail/warn checks (paste manually, or use `create-issues`). |
 
 ## Write Output to a File
 
@@ -83,6 +96,16 @@ Diff health between two checkouts, branches, tags, or repositories. Useful for P
 # Two local checkouts (e.g. main vs PR worktree)
 repopulse compare ./checkout-main ./checkout-pr
 
+# Remote refs without local checkout (tree URLs)
+repopulse compare \
+  https://github.com/owner/repo/tree/main \
+  https://github.com/owner/repo/tree/feature/pr-42
+
+# Or plain URLs with per-side refs
+repopulse compare https://github.com/owner/repo https://github.com/owner/repo \
+  --baseline-ref main \
+  --target-ref feature/pr-42
+
 # Labels for readable output
 repopulse compare ./main ./pr --baseline-label main --target-label pr-42
 
@@ -98,12 +121,39 @@ repopulse compare ./main ./pr --fail-on-regression --quiet
 | Flag | Purpose |
 |---|---|
 | `--format` | `table` (default), `markdown`, `json`, or `summary`. |
+| `--baseline-ref` / `--target-ref` | Git branch/tag/SHA for each side (overrides URL-embedded refs). |
 | `--baseline-label` / `--target-label` | Display names in the report. |
 | `--fail-on-regression` | Exit code `2` if total score dropped or any check regressed. |
 | `--config` | Same YAML config applied to both sides. |
 | `--token` | GitHub token when either side is a remote URL. |
 
-Tip: check out two worktrees or clone two refs, then pass the directories to `compare`. Remote GitHub URLs compare each repo's default branch (ref-aware remote compare is on the later roadmap).
+## Create GitHub issues from recommendations
+
+Turn fail/warn checks into real issues (requires a token with `issues:write` for `--yes`):
+
+```bash
+# Preview only (safe; works on local paths too)
+repopulse create-issues https://github.com/owner/repo --dry-run
+
+# Create issues on GitHub
+repopulse create-issues https://github.com/owner/repo --yes --token "$GITHUB_TOKEN"
+
+# Only failures, extra label
+repopulse create-issues https://github.com/owner/repo --yes \
+  --statuses fail \
+  --label maintenance
+```
+
+| Flag | Purpose |
+|---|---|
+| `--dry-run` | Print titles/bodies; create nothing. |
+| `--yes` | Actually create issues (required for real creates). |
+| `--statuses` | Comma list, default `fail,warn`. |
+| `--label` | Extra label (repeatable). |
+| `--ref` | Scan a specific branch/tag before building issues. |
+| `--token` | GitHub token (or `GITHUB_TOKEN` env). |
+
+You must pass either `--dry-run` or `--yes` (not both).
 
 ## CI Threshold
 
@@ -147,7 +197,13 @@ repopulse scan "https://github.com/${REPO}" \
   --quiet
 ```
 
-Install in the workflow with `pip install repo-pulse` (CLI command remains `repopulse`). From a checkout of this project you can also use `pip install -e .` or `pip install -e ".[dev]"`.
+Install in the workflow with:
+
+```bash
+pip install repo-pulse
+```
+
+The CLI command remains `repopulse` (do not `pip install repopulse` — that is a different package on PyPI). From a checkout of this project you can also use `pip install -e .` or `pip install -e ".[dev]"`.
 
 ## Configuration File
 

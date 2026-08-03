@@ -15,13 +15,19 @@ This guide explains how to install RepoPulse for normal use and for development.
 pip install repo-pulse
 ```
 
-The **PyPI project name** is `repo-pulse` because `repopulse` is already used by an unrelated package. After install, the CLI command is still:
+| | Name |
+|---|---|
+| Install (`pip`) | `repo-pulse` |
+| CLI | `repopulse` |
+| Import | `repopulse` |
+
+The PyPI name `repopulse` belongs to an **unrelated** package. Always use `repo-pulse` for this project. After install:
 
 ```bash
 repopulse --help
 ```
 
-If the package is not on PyPI yet, use a GitHub Release wheel or the source install below.
+If the package is not on PyPI yet, use a GitHub Release wheel or the source install below. Maintainers: see [docs/PUBLISHING.md](docs/PUBLISHING.md) for Trusted Publishing (`release.yml`, environment `pypi`, variable `PUBLISH_TO_PYPI`).
 
 ## Install from a GitHub Release
 

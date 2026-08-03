@@ -6,6 +6,7 @@
 #   checkout on the runner. That matches the current CLI design.
 # - Optional: add --config .repopulse.yml if you keep a config file in the repo.
 # - PyPI package name is `repo-pulse` (CLI remains `repopulse`).
+#   Do not `pip install repopulse` — that is an unrelated package on PyPI.
 # - If not installing from PyPI, use a checkout + `pip install -e .` instead.
 name: RepoPulse
 

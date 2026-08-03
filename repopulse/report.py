@@ -110,6 +110,29 @@ def render_summary(report: HealthReport) -> str:
     return "\n".join(lines)
 
 
+def format_check_issue_body(check, full_name: str) -> str:
+    """Markdown body for a single check (shared by render_issues and issue export)."""
+    lines = [
+        f"**Repository:** {full_name}",
+        f"**Score impact:** {check.score}/{check.max_score}",
+        f"**Summary:** {check.message}",
+        "",
+        "### Action items",
+    ]
+    if check.recommendations:
+        lines.extend(f"- {item}" for item in check.recommendations)
+    else:
+        lines.append("- Review this check and improve the repository.")
+    lines.extend(
+        [
+            "",
+            "### Labels",
+            f"`repopulse`, `health-check`, `{check.key}`",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def render_issues(report: HealthReport) -> str:
     """Render GitHub-issue-ready Markdown blocks for fail/warn checks and any with recommendations."""
     repo = report.repository
@@ -138,23 +161,8 @@ def render_issues(report: HealthReport) -> str:
         block_lines = [
             f"## [RepoPulse] {check.title}: {check.status}",
             "",
-            f"**Repository:** {full_name}",
-            f"**Score impact:** {check.score}/{check.max_score}",
-            f"**Summary:** {check.message}",
-            "",
-            "### Action items",
+            format_check_issue_body(check, full_name),
         ]
-        if check.recommendations:
-            block_lines.extend(f"- {item}" for item in check.recommendations)
-        else:
-            block_lines.append("- Review this check and improve the repository.")
-        block_lines.extend(
-            [
-                "",
-                "### Labels",
-                f"`repopulse`, `health-check`, `{check.key}`",
-            ]
-        )
         blocks.append("\n".join(block_lines))
 
     lines.append("\n\n---\n\n".join(blocks))

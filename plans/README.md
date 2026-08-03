@@ -14,6 +14,9 @@ Generated 2026-08-02 against commit `bc427a8`. Three parallel workstreams for Re
 | 006 | Local path scan | P1 | L | — | agent-local | DONE |
 | 007 | Richer reports, security, release profile | P1 | M | 001–006 | orchestrator | DONE |
 | 008 | Compare two scans (branch/path score delta) | P1 | M | 007 | orchestrator | DONE |
+| 009 | GitHub ref-aware scan & compare | P1 | M | — | agent-ref | DONE |
+| 010 | Create GitHub issues from recommendations | P1 | M | — | agent-issues | DONE |
+| 011 | Finish PyPI readiness (`repo-pulse`) | P1 | S | — | agent-pypi | DONE |
 
 Status values: `TODO` | `IN PROGRESS` | `DONE` | `BLOCKED` | `REJECTED`
 
