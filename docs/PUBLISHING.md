@@ -21,9 +21,16 @@ Do **not** run `pip install repopulse` expecting this tool.
 
 ---
 
+## Status
+
+Package is published as **`repopulse-cli`**: https://pypi.org/project/repopulse-cli/
+
+Users install with `pip install repopulse-cli`. This section is for **maintainers** shipping new versions.
+
 ## One-shot checklist: enable PyPI Trusted Publishing
 
-Do this **once** as a human. Agents and CI must **not** invent credentials or set secrets for you.
+Do this **once** per PyPI project. Agents and CI must **not** invent credentials or set secrets for you.
+
 
 ### On PyPI
 

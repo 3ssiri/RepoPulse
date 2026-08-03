@@ -20,18 +20,26 @@ pytest
 
 ```text
 repopulse/
-  cli.py
-  analyzer.py
-  github_client.py
+  cli.py              # scan, compare, create-issues
+  analyzer.py         # shared report pipeline (GitHub + local)
+  github_client.py    # GitHub API (tree, contents, issues)
+  local_source.py     # offline directory walk
+  compare.py          # report diffs
+  issue_export.py     # issue payloads from checks
   models.py
   report.py
   scoring.py
-  url_parser.py
-  checks/
+  settings.py         # .repopulse.yml + profiles
+  url_parser.py       # owner/repo/ref from GitHub URLs
+  checks/             # one module per health check
 tests/
-examples/
+examples/             # CI workflow + config profiles
 docs/
 ```
+
+## User-facing package name
+
+End users install from PyPI as **`repopulse-cli`**. The import package and CLI remain **`repopulse`**. Do not document `pip install repopulse` for this project.
 
 ## Adding a New Check
 

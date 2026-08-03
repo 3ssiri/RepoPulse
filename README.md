@@ -2,139 +2,149 @@
 
 [![CI](https://github.com/3ssiri/RepoPulse/actions/workflows/ci.yml/badge.svg)](https://github.com/3ssiri/RepoPulse/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/3ssiri/RepoPulse/actions/workflows/codeql.yml/badge.svg)](https://github.com/3ssiri/RepoPulse/actions/workflows/codeql.yml)
+[![PyPI version](https://img.shields.io/pypi/v/repopulse-cli.svg)](https://pypi.org/project/repopulse-cli/)
+[![Python](https://img.shields.io/pypi/pyversions/repopulse-cli.svg)](https://pypi.org/project/repopulse-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-RepoPulse is a Python CLI tool that scans GitHub repositories and produces a practical health report with a score out of 100, clear warnings, and actionable recommendations.
+RepoPulse is a Python CLI that scans GitHub repositories (or a local folder) and produces a practical **health report**: score out of 100, pass/warn/fail checks, and actionable recommendations.
 
-It is built for developers who want a quick repository quality review from the terminal, and for maintainers who want a small tool they can later run in CI.
+It is built for developers who want a quick quality review from the terminal, and for maintainers who want a small tool in CI, release prep, or issue triage.
 
-## Quick Links
-
-- [Arabic README](README.ar.md)
-- [Spanish README](README.es-ES.md)
-- [Installation Guide](INSTALLATION.md)
-- [Usage Guide](USAGE.md)
-- [Requirements](REQUIREMENTS.md)
-- [Supported Checks](docs/checks.md)
-- [JSON report contract](docs/json-schema.md)
-- [Architecture](ARCHITECTURE.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security Policy](SECURITY.md)
-- [Roadmap](docs/roadmap.md)
-- [License](LICENSE)
-- [Changelog](CHANGELOG.md)
-- [Publishing guide](docs/PUBLISHING.md)
-- [Releases](https://github.com/3ssiri/RepoPulse/releases)
-
-## Why RepoPulse Matters
-
-Open source maintainers repeat the same repository hygiene checks across projects: README quality, licensing, CI, tests, stale activity, sensitive file names, and basic security posture. RepoPulse turns those checks into a quick, repeatable report that can run locally or in automation.
-
-The project is early-stage, but it is designed around practical maintainer workflows: fast triage, clear recommendations, CI thresholds, and machine-readable output for future automation.
-
-## Features
-
-- Scan public GitHub repositories by URL.
-- Scan a local directory offline (`repopulse scan .`) without the GitHub API.
-- Emit GitHub-issue-ready recommendations with `--format issues`.
-- Scan private repositories with `--token` or `GITHUB_TOKEN`.
-- Fetch repository metadata and recursive file tree through the GitHub API (remote scans).
-- Score repository health out of 100.
-- Render a Rich terminal report.
-- Export Markdown reports.
-- Print or write JSON reports.
-- Produce compact summaries for automation.
-- Fail CI jobs with `--fail-under`.
-- Compare two scans (`repopulse compare`) with score/check deltas and `--fail-on-regression`.
-- Drop-in GitHub Actions example for CI health gates ([examples/github-action-repopulse.yml](examples/github-action-repopulse.yml)).
-- Customize check weights and default thresholds with `.repopulse.yml` (optional named profiles: `strict`, `library`, `docs`, `release`).
-- Detect common sensitive file names without printing secret contents.
-- Add advisory dependency and security baseline recommendations.
-
-## Tech Stack
-
-RepoPulse is built with:
-
-| Technology | Purpose |
+| | Name |
 |---|---|
-| Python 3.11+ | Core runtime. |
-| Typer | CLI commands and options. |
-| Requests | GitHub API calls. |
-| Rich | Terminal tables and formatted output. |
-| Pydantic | Typed report and check models. |
-| python-dotenv | Optional `GITHUB_TOKEN` loading. |
-| Pytest | Test suite. |
-| Ruff | Linting in CI. |
+| **Install from PyPI** | `repopulse-cli` |
+| **CLI command** | `repopulse` |
+| **Python import** | `repopulse` |
 
-## Installation
+> **Important:** Do **not** run `pip install repopulse`. That installs an **unrelated** package on PyPI. Always use **`repopulse-cli`**.
 
-From PyPI — install name is `repopulse-cli` (not the unrelated PyPI package `repopulse`). CLI remains `repopulse`:
+## Install (for users)
 
 ```bash
 pip install repopulse-cli
 repopulse --help
 ```
 
-Or clone and install from source:
+Upgrade:
 
 ```bash
-git clone https://github.com/3ssiri/RepoPulse.git
-cd RepoPulse
-pip install -e .
+pip install -U repopulse-cli
 ```
 
-For development:
+Optional isolated environment (recommended if other tools pin different dependency versions):
 
 ```bash
-pip install -e ".[dev]"
+python -m venv .venv
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# macOS / Linux:
+# source .venv/bin/activate
+pip install repopulse-cli
 ```
 
-See [INSTALLATION.md](INSTALLATION.md) for full setup notes.
-
-## Basic Usage
+From a GitHub Release wheel (if you prefer not to use PyPI):
 
 ```bash
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.1/repopulse_cli-0.3.1-py3-none-any.whl
+```
+
+Full install notes: [INSTALLATION.md](INSTALLATION.md).
+
+## Quick start
+
+```bash
+# Local directory (offline — no GitHub API)
 repopulse scan .
-repopulse scan https://github.com/username/repository
-repopulse scan https://github.com/username/repository --export report.md
-repopulse scan https://github.com/username/repository --format json --output report.json
-repopulse scan https://github.com/username/repository --fail-under 75
-repopulse scan https://github.com/username/repository --config .repopulse.yml
-repopulse scan https://github.com/username/private-repo --token YOUR_GITHUB_TOKEN
-repopulse compare ./checkout-main ./checkout-pr --fail-on-regression
+
+# Public GitHub repository
+repopulse scan https://github.com/psf/requests
+
+# Specific branch or tag (no local checkout)
+repopulse scan https://github.com/psf/requests/tree/main
+repopulse scan https://github.com/psf/requests --ref v2.32.0
+
+# CI gate
+repopulse scan https://github.com/username/repository --fail-under 75 --format summary --quiet
+
+# Compare two refs or checkouts
+repopulse compare \
+  https://github.com/owner/repo/tree/main \
+  https://github.com/owner/repo/tree/feature/pr-42 \
+  --fail-on-regression
+
+# Preview GitHub issues from fail/warn checks
+repopulse create-issues https://github.com/owner/repo --dry-run
 ```
 
-You can also set a token in the environment:
+Private repos: pass `--token` or set `GITHUB_TOKEN`. Details: [USAGE.md](USAGE.md).
+
+## Features (current)
+
+### Scanning
+
+- Scan **public GitHub** repositories by URL.
+- Scan a **local directory** offline: `repopulse scan .` (no API, no rate limits).
+- Scan a specific **branch, tag, or commit** via URL (`/tree/<ref>`, `/releases/tag/<tag>`) or `--ref`.
+- Scan **private** repositories with `--token` or `GITHUB_TOKEN`.
+- Shared check pipeline for remote and local sources.
+
+### Reports and output
+
+- Score out of **100** with grades (Excellent → Critical).
+- Rich **terminal table** (default).
+- Formats: `table`, `summary`, `markdown`, `json`, `issues`.
+- Export Markdown (`--export`) and write any format to a file (`--output`).
+- Stable JSON contract (`schema_version` 1.0) — see [docs/json-schema.md](docs/json-schema.md).
+- Richer Markdown: pass/warn/fail counts, attention sections, applied config.
+
+### Compare
+
+- `repopulse compare <baseline> <target>` — local paths and/or GitHub URLs.
+- Per-side refs: tree URLs or `--baseline-ref` / `--target-ref`.
+- Formats: `table`, `markdown`, `json`, `summary`.
+- CI gate: `--fail-on-regression` (exit code `2` if score drops or any check regresses).
+
+### Issues and automation
+
+- `--format issues` — paste-ready Markdown for fail/warn checks.
+- `repopulse create-issues` — open real GitHub issues (`--dry-run` or `--yes`).
+- CI example: [examples/github-action-repopulse.yml](examples/github-action-repopulse.yml).
+- Optional config `.repopulse.yml` with profiles: `strict`, `library`, `docs`, `release`.
+
+### Safety
+
+- Detects common **sensitive file names** (`.env`, keys, credentials) without printing file contents.
+- Advisory dependency and security baseline checks (recommendations; do not change the 100-point score by default).
+
+## Commands
+
+| Command | Purpose |
+|---|---|
+| `repopulse scan <url-or-path>` | Health report for one repository or folder. |
+| `repopulse compare <baseline> <target>` | Diff two health reports. |
+| `repopulse create-issues <url-or-path>` | Create GitHub issues from fail/warn checks. |
+
+## Configuration
+
+RepoPulse reads `.repopulse.yml` from the current directory when present, or via `--config`:
 
 ```bash
-GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/private-repo
+repopulse scan . --config examples/repopulse.yml
 ```
 
-See [USAGE.md](USAGE.md) for all options and examples.
-
-## OSS Maintainer Use Cases
-
-- Run repository health checks before releases.
-- Add a `--fail-under` threshold to CI for project quality gates (see [examples/github-action-repopulse.yml](examples/github-action-repopulse.yml) and [USAGE.md](USAGE.md#using-repopulse-in-github-actions)).
-- Export Markdown reports for issue triage or maintainer handoff.
-- Export JSON for dashboards, bots, or future AI-assisted review workflows.
-- Audit public or private repositories without printing secret contents.
-
-## Example Output
-
-```text
-RepoPulse Health Report for psf/requests
-Score: 91 / 100 - Excellent
-
-Checks
-README Quality      PASS   16/20
-License             PASS   10/10
-.gitignore          PASS   10/10
-Tests               WARN   12/15
-GitHub Actions      PASS   15/15
+```yaml
+profile: release   # optional: strict | library | docs | release
+fail_under: 90
+disabled_checks:
+  - activity
+weights:
+  tests: 25
+  github_actions: 20
 ```
 
-## Scoring System
+Ready-made profiles: [examples/profiles/](examples/profiles/).
+
+## Scoring (default weights)
 
 | Check | Points |
 |---|---:|
@@ -148,70 +158,77 @@ GitHub Actions      PASS   15/15
 | Project Structure | 5 |
 | Package Scripts | 5 |
 
-Grades:
-
 | Score | Grade |
 |---|---|
-| 90-100 | Excellent |
-| 75-89 | Good |
-| 60-74 | Fair |
-| 40-59 | Weak |
-| 0-39 | Critical |
+| 90–100 | Excellent |
+| 75–89 | Good |
+| 60–74 | Fair |
+| 40–59 | Weak |
+| 0–39 | Critical |
 
-Dependency and security baseline checks are advisory in `v0.1.0`; they add recommendations without changing the 100-point score.
+Dependency and security baseline checks are **advisory**: they add recommendations without changing the scored total.
 
-## Configuration
+Full check reference: [docs/checks.md](docs/checks.md).
 
-RepoPulse automatically reads `.repopulse.yml` from the current directory when present. You can also pass a file explicitly:
+## Example output
+
+```text
+RepoPulse Health Report for psf/requests
+Score: 91 / 100 - Excellent
+
+Checks
+README Quality      PASS   16/20
+License             PASS   10/10
+.gitignore          PASS   10/10
+Tests               WARN   12/15
+GitHub Actions      PASS   15/15
+```
+
+## Install for contributors / from source
 
 ```bash
-repopulse scan https://github.com/username/repository --config examples/repopulse.yml
+git clone https://github.com/3ssiri/RepoPulse.git
+cd RepoPulse
+pip install -e ".[dev]"
+pytest
 ```
 
-Configuration supports default CI thresholds, disabled checks, and custom weights:
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [INSTALLATION.md](INSTALLATION.md).
 
-```yaml
-fail_under: 85
-disabled_checks:
-  - activity
-weights:
-  readme: 25
-  tests: 20
-  github_actions: 20
-```
+## Documentation
 
-See [examples/repopulse.yml](examples/repopulse.yml) for a complete example.
-
-## Supported Checks
-
-- README completeness.
-- License presence.
-- `.gitignore` presence and common patterns.
-- Test folders, test files, and package test commands.
-- GitHub Actions workflows for CI, tests, linting, and builds.
-- Recent activity based on `pushed_at`.
-- Sensitive file names such as `.env`, `credentials.json`, and private keys.
-- Project structure and root clutter.
-- Package scripts or Python project configuration.
-- Dependency hygiene through lockfiles and Dependabot.
-- Security baseline through `SECURITY.md`, Dependabot, and CodeQL.
-
-Full details are in [docs/checks.md](docs/checks.md).
+| Doc | Contents |
+|---|---|
+| [INSTALLATION.md](INSTALLATION.md) | PyPI, wheel, source, tokens, troubleshooting |
+| [USAGE.md](USAGE.md) | All commands, flags, CI, config, exit codes |
+| [REQUIREMENTS.md](REQUIREMENTS.md) | Runtime and dev dependencies |
+| [docs/checks.md](docs/checks.md) | What each check evaluates |
+| [docs/json-schema.md](docs/json-schema.md) | JSON report contract |
+| [docs/PUBLISHING.md](docs/PUBLISHING.md) | Releases and PyPI publishing (maintainers) |
+| [docs/roadmap.md](docs/roadmap.md) | Product roadmap |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | How the code is structured |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [README.ar.md](README.ar.md) | Arabic summary |
+| [README.es-ES.md](README.es-ES.md) | Spanish summary |
 
 ## Requirements
 
-- Python 3.11 or newer.
-- Network access to `api.github.com`.
-- GitHub token for private repositories or higher API rate limits.
-
-See [REQUIREMENTS.md](REQUIREMENTS.md) for runtime and development requirements.
+- Python **3.11+**
+- Network access to `api.github.com` for remote scans
+- GitHub token for private repos, higher rate limits, or `create-issues --yes`
 
 ## Contributing
 
-Contributions are welcome. Keep checks independent, return `CheckResult`, and add focused tests for new behavior.
+Contributions are welcome. Keep checks independent, return `CheckResult`, and add focused tests.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and contribution workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-RepoPulse is released under the MIT License. See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
+
+## Links
+
+- PyPI: https://pypi.org/project/repopulse-cli/
+- Releases: https://github.com/3ssiri/RepoPulse/releases
+- Issues: https://github.com/3ssiri/RepoPulse/issues

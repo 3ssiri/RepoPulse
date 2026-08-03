@@ -3,8 +3,11 @@
 ## Runtime Requirements
 
 - Python 3.11 or newer.
-- Network access to `https://api.github.com`.
-- GitHub token for private repositories or higher rate limits.
+- Network access to `https://api.github.com` for remote scans, compare against GitHub URLs, and `create-issues --yes`.
+- Network access to PyPI (or a GitHub Release URL) to install the package.
+- GitHub token for private repositories, higher rate limits, or creating issues.
+
+**Install package name:** `repopulse-cli` (CLI: `repopulse`). See [INSTALLATION.md](INSTALLATION.md).
 
 ## Runtime Python Dependencies
 
@@ -46,4 +49,12 @@ Use a token when:
 - Running many scans.
 - Running RepoPulse in automation.
 
-The token should have read access to the target repository.
+Token scopes (minimum practical):
+
+| Use case | Access needed |
+|---|---|
+| Public remote scan | Optional (helps with rate limits) |
+| Private remote scan | Read access to that repository |
+| `create-issues --yes` | Permission to create issues on the target repository |
+
+Never commit tokens. Prefer env vars / CI secrets. See [USAGE.md](USAGE.md#token-hygiene-important).
