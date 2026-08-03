@@ -4,7 +4,7 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 ## Near Term
 
-- ~~Publish installation-ready releases.~~ Done — GitHub Releases on `v*` tags; install via `pip install repopulse-cli` (CLI `repopulse`). PyPI publish is opt-in Trusted Publishing (`release.yml`, env `pypi`, var `PUBLISH_TO_PYPI`) — human one-time setup; see `docs/PUBLISHING.md`.
+- ~~Publish installation-ready releases.~~ Done — GitHub Releases on `v*` tags **and** PyPI package [`repopulse-cli`](https://pypi.org/project/repopulse-cli/) (CLI `repopulse`). Maintainers: [docs/PUBLISHING.md](PUBLISHING.md).
 - Expand check coverage for common Python, JavaScript, and documentation patterns. (Partial: deeper tests/Actions heuristics shipped.)
 - ~~Add richer Markdown reports for maintainers and contributors.~~ Done — attention sections, pass/warn/fail counts, applied config.
 - ~~Improve JSON output stability for automation.~~ Done — sorted keys + [json-schema.md](json-schema.md) contract for `schema_version` 1.0.

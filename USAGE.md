@@ -203,7 +203,7 @@ Install in the workflow with:
 pip install repopulse-cli
 ```
 
-The CLI command remains `repopulse` (do not `pip install repopulse` — that is a different package on PyPI). From a checkout of this project you can also use `pip install -e .` or `pip install -e ".[dev]"`.
+The CLI command remains `repopulse` (do not `pip install repopulse` - that is a different package on PyPI). From a checkout of this project you can also use `pip install -e .` or `pip install -e ".[dev]"`.
 
 ## Configuration File
 
@@ -312,8 +312,17 @@ See [docs/json-schema.md](docs/json-schema.md) for the field list and compatibil
 
 ## Exit Codes
 
-| Exit Code | Meaning |
-|---:|---|
-| `0` | Scan completed successfully and passed any threshold. |
-| `1` | Invalid input or GitHub API error. |
-| `2` | Scan completed but score was below `--fail-under`. |
+| Exit Code | Command | Meaning |
+|---:|---|---|
+| `0` | all | Success (and no threshold/regression failure). |
+| `1` | all | Invalid input, missing flags (`create-issues` without `--dry-run`/`--yes`), or GitHub API error. |
+| `2` | `scan` | Score below `--fail-under` (or config `fail_under`). |
+| `2` | `compare` | Regression detected when `--fail-on-regression` is set. |
+
+## Install reminder
+
+```bash
+pip install repopulse-cli
+```
+
+Not `pip install repopulse` (different package). See [INSTALLATION.md](INSTALLATION.md).

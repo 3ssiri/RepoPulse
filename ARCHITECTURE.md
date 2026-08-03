@@ -1,46 +1,56 @@
 # Architecture
 
-RepoPulse is intentionally small and modular. The CLI gathers input, the GitHub client fetches repository data, independent checks evaluate the repository, and the reporting layer renders the result.
+RepoPulse is intentionally small and modular. The CLI accepts a target (GitHub URL or local path), loads repository data from the API or disk, runs independent checks, scores the result, and renders output. Optional commands compare two reports or open GitHub issues.
 
-## Data Flow
+## Data Flow (scan)
 
 ```text
-User Input
+User Input (URL | path | ref)
   |
   v
-CLI Layer
+CLI (scan / compare / create-issues)
+  |
+  +-- local directory? --> local_source (walk + read files)
+  |
+  +-- GitHub URL? ------> url_parser (owner, repo, ref)
+                              |
+                              v
+                         GitHubClient (repo, tree@ref, contents@ref)
   |
   v
-GitHub URL Parser
+analyzer (shared check pipeline)
   |
   v
-GitHub Client
+scoring + HealthReport
   |
   v
-Repository Metadata + File Tree
-  |
-  v
-Checks Engine
-  |
-  v
-Scoring Engine
-  |
-  v
-Terminal / Markdown / JSON Output
+report (table | summary | markdown | json | issues)
 ```
+
+## Commands
+
+| Command | Role |
+|---|---|
+| `scan` | Build one `HealthReport` and render it. |
+| `compare` | Scan baseline + target, diff via `compare.build_comparison`. |
+| `create-issues` | Scan once, build issue payloads, optionally POST issues. |
 
 ## Main Modules
 
 | Module | Responsibility |
 |---|---|
-| `repopulse/cli.py` | Typer command definitions and user-facing options. |
-| `repopulse/url_parser.py` | GitHub repository URL parsing and validation. |
-| `repopulse/github_client.py` | GitHub API requests and API error handling. |
-| `repopulse/analyzer.py` | Builds a full `HealthReport` from API data and checks. |
-| `repopulse/models.py` | Pydantic models for repository info, files, checks, and reports. |
-| `repopulse/scoring.py` | Total score and grade calculation. |
-| `repopulse/report.py` | Terminal, Markdown, JSON, and summary rendering. |
-| `repopulse/checks/` | Independent repository health checks. |
+| `repopulse/cli.py` | Typer commands and options. |
+| `repopulse/url_parser.py` | Parse github.com URLs into `(owner, repo, ref)`. |
+| `repopulse/github_client.py` | GitHub API: repo, tree, file contents, create issue. |
+| `repopulse/local_source.py` | Offline directory walk and git metadata. |
+| `repopulse/analyzer.py` | Shared pipeline: inputs → checks → `HealthReport`. |
+| `repopulse/compare.py` | Diff two `HealthReport` values. |
+| `repopulse/issue_export.py` | Issue title/body/labels from checks. |
+| `repopulse/models.py` | Pydantic models. |
+| `repopulse/scoring.py` | Totals, grades, config weights. |
+| `repopulse/settings.py` | `.repopulse.yml` and named profiles. |
+| `repopulse/report.py` | All human/machine renderers. |
+| `repopulse/checks/` | One independent check per file. |
 
 ## Check Design
 
@@ -49,28 +59,20 @@ Each check should:
 - Live in its own file under `repopulse/checks/`.
 - Return a `CheckResult`.
 - Avoid network calls.
-- Avoid printing secrets or file contents from sensitive files.
-- Add recommendations that a maintainer can act on.
+- Avoid printing secrets or sensitive file **contents** (names only).
+- Add recommendations a maintainer can act on.
 
-Core checks contribute to the 100-point score. Advisory checks can use `max_score=0` when they should provide guidance without changing the main score.
+Core checks contribute to the 100-point score. Advisory checks use `max_score=0` when they should guide without changing the main score.
+
+## Packaging
+
+| Surface | Name |
+|---|---|
+| PyPI distribution | `repopulse-cli` |
+| Import package / CLI entry | `repopulse` |
+
+Defined in `pyproject.toml` (`[project].name` vs `[project.scripts]`).
 
 ## Error Handling
 
-GitHub API and network failures are wrapped in `GitHubAPIError` so the CLI can show concise user-facing messages instead of raw tracebacks.
-
-## Testing Strategy
-
-Tests cover:
-
-- URL parsing.
-- Scoring.
-- Individual checks.
-- Report rendering.
-- CLI behavior.
-- GitHub client error wrapping.
-
-Run tests with:
-
-```bash
-pytest
-```
+GitHub API and network failures are wrapped in `GitHubAPIError` so the CLI shows concise messages instead of raw tracebacks.

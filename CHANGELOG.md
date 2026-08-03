@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Documentation refresh: install as `repopulse-cli` for end users, full feature list (scan/ref/compare/create-issues), updated README (en/ar/es), INSTALLATION, USAGE, REQUIREMENTS, ARCHITECTURE, and publishing notes.
+
 ## 0.3.1 - 2026-08-04
 
 - PyPI distribution name is **`repopulse-cli`** (`pip install repopulse-cli`); CLI/import remain `repopulse`.

@@ -1,68 +1,77 @@
 # RepoPulse
 
-RepoPulse اداة سطر اوامر بلغة Python تفحص مستودعات GitHub وتنتج تقرير صحة واضح بدرجة من 100 مع توصيات عملية للتحسين.
+RepoPulse أداة سطر أوامر بلغة Python تفحص مستودعات GitHub (أو مجلدًا محليًا) وتنتج تقرير صحة بدرجة من 100 مع توصيات عملية.
 
-## لماذا RepoPulse مهم؟
+## أسماء مهمة
 
-مشرفو المشاريع مفتوحة المصدر يكررون فحوصات كثيرة بين المستودعات: جودة README، الترخيص، الاختبارات، CI، النشاط، الملفات الحساسة بالاسم، والاساسيات الامنية. RepoPulse يحول هذه الفحوصات الى تقرير سريع يمكن تشغيله محليا او داخل CI.
+| الدور | الاسم الصحيح |
+|---|---|
+| التثبيت من PyPI | `repopulse-cli` |
+| أمر الطرفية | `repopulse` |
 
-## ما فائدة المشروع؟
+**لا تستخدم** `pip install repopulse` — تلك حزمة **أخرى** على الفهرس.
 
-يساعدك RepoPulse على معرفة جودة مستودع GitHub بسرعة:
+## التثبيت (للمستخدمين)
 
-- هل يوجد README جيد؟
-- هل يوجد ترخيص؟
-- هل توجد اختبارات؟
-- هل توجد GitHub Actions؟
-- هل توجد ملفات حساسة بالاسم؟
-- هل بنية المشروع واضحة؟
-- هل توجد توصيات أمنية او توصيات للتبعيات؟
+```bash
+pip install repopulse-cli
+repopulse --help
+```
 
-## التثبيت
+التحديث:
+
+```bash
+pip install -U repopulse-cli
+```
+
+من المصدر (للمساهمين):
 
 ```bash
 git clone https://github.com/3ssiri/RepoPulse.git
 cd RepoPulse
-pip install -e .
-```
-
-للمطورين:
-
-```bash
 pip install -e ".[dev]"
 ```
+
+التفاصيل: [INSTALLATION.md](INSTALLATION.md).
 
 ## الاستخدام السريع
 
 ```bash
+# مجلد محلي (بدون شبكة)
+repopulse scan .
+
+# مستودع GitHub
 repopulse scan https://github.com/username/repository
+
+# فرع أو وسم بدون استنساخ
+repopulse scan https://github.com/username/repository/tree/main
+repopulse scan https://github.com/username/repository --ref v1.0.0
+
+# مقارنة مرجعين
+repopulse compare \
+  https://github.com/owner/repo/tree/main \
+  https://github.com/owner/repo/tree/feature/x
+
+# معاينة Issues (آمن)
+repopulse create-issues https://github.com/owner/repo --dry-run
+
+# بوابة CI
+repopulse scan . --fail-under 75 --format summary --quiet
 ```
 
-تصدير Markdown:
+الدليل الكامل: [USAGE.md](USAGE.md) (بالإنجليزية).
 
-```bash
-repopulse scan https://github.com/username/repository --export report.md
-```
+## الميزات الحالية
 
-تصدير JSON:
+- فحص GitHub والملفات المحلية
+- مرجع محدد (فرع/وسم) عبر الرابط أو `--ref`
+- مقارنة مسحين: `compare` مع `--fail-on-regression`
+- إنشاء Issues: `create-issues` (`--dry-run` / `--yes`)
+- صيغ: جدول، ملخص، Markdown، JSON، issues
+- إعدادات `.repopulse.yml` وملفات تعريف: `strict` · `library` · `docs` · `release`
+- كشف أسماء ملفات حساسة دون طباعة المحتوى
 
-```bash
-repopulse scan https://github.com/username/repository --format json --output report.json
-```
-
-فحص مستودع خاص:
-
-```bash
-repopulse scan https://github.com/username/private-repo --token YOUR_GITHUB_TOKEN
-```
-
-او عبر متغير البيئة:
-
-```bash
-GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/private-repo
-```
-
-## نظام التقييم
+## نظام التقييم (افتراضي)
 
 | الفحص | النقاط |
 |---|---:|
@@ -76,8 +85,6 @@ GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/privat
 | Project Structure | 5 |
 | Package Scripts | 5 |
 
-## التصنيفات
-
 | الدرجة | التصنيف |
 |---|---|
 | 90-100 | Excellent |
@@ -88,12 +95,13 @@ GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/privat
 
 ## ملفات مهمة
 
-- [INSTALLATION.md](INSTALLATION.md): شرح التثبيت.
-- [USAGE.md](USAGE.md): شرح الاوامر والخيارات.
-- [REQUIREMENTS.md](REQUIREMENTS.md): المتطلبات.
-- [docs/checks.md](docs/checks.md): تفاصيل الفحوصات.
-- [docs/roadmap.md](docs/roadmap.md): خارطة الطريق.
-- [ARCHITECTURE.md](ARCHITECTURE.md): بنية المشروع.
-- [CONTRIBUTING.md](CONTRIBUTING.md): طريقة المساهمة.
-- [SECURITY.md](SECURITY.md): سياسة الامان.
-- [LICENSE](LICENSE): ترخيص MIT.
+- [INSTALLATION.md](INSTALLATION.md) — التثبيت
+- [USAGE.md](USAGE.md) — الأوامر والخيارات
+- [docs/checks.md](docs/checks.md) — تفاصيل الفحوصات
+- [docs/roadmap.md](docs/roadmap.md) — خارطة الطريق
+- [CHANGELOG.md](CHANGELOG.md) — سجل الإصدارات
+- [README.md](README.md) — الدليل الإنجليزي الكامل
+
+## الترخيص
+
+MIT — انظر [LICENSE](LICENSE).
