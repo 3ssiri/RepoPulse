@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.2 - 2026-08-04
+
 - Added `repopulse compare <baseline> <target>` to diff two health scans (local paths and/or GitHub URLs).
 - Comparison formats: `table`, `markdown`, `json`, `summary`; labels via `--baseline-label` / `--target-label`.
 - CI gate: `--fail-on-regression` exits with code 2 when the score drops or any check regresses.

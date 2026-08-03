@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "repopulse"
-version = "0.2.1"
+version = "0.2.2"
 description = "A CLI tool that analyzes GitHub repository health and generates quality reports."
 authors = [{ name = "Ali Assiri" }]
 readme = "README.md"
