@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.3.0 - 2026-08-04
+
+- GitHub ref-aware scan: `/tree/<ref>`, `/releases/tag/<tag>`, and `--ref` (no local checkout required).
+- Compare supports per-side refs via tree URLs or `--baseline-ref` / `--target-ref`.
+- New command `repopulse create-issues` to open GitHub issues from fail/warn checks (`--dry-run` / `--yes`).
+- Packaging/docs: install as `repo-pulse` on PyPI; CLI remains `repopulse`.
+
 ## 0.2.3 - 2026-08-04
 
 - PyPI distribution name is `repo-pulse` (`pip install repo-pulse`); CLI/import remain `repopulse`.

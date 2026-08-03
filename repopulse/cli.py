@@ -8,6 +8,8 @@ from repopulse.analyzer import build_health_report, build_local_health_report
 from repopulse.compare import build_comparison, has_regression
 from repopulse.config import load_environment
 from repopulse.github_client import GitHubAPIError, GitHubClient
+from repopulse.issue_export import issue_payloads_from_report
+from repopulse.local_source import repository_info_from_path
 from repopulse.models import HealthReport
 from repopulse.report import (
     render_comparison_json,
@@ -42,26 +44,40 @@ def scan_target(
     scan_config: RepoPulseConfig,
     quiet: bool,
     progress_label: str | None = None,
+    ref: str | None = None,
 ) -> HealthReport:
     """Scan a local directory or GitHub URL and return a HealthReport."""
     target_path = Path(target)
     if target_path.exists() and target_path.is_dir():
+        if ref is not None and not quiet:
+            console.print(
+                "[yellow]Warning:[/yellow] --ref is ignored for local directory scans "
+                "(refs apply only to GitHub URLs)."
+            )
         resolved = target_path.resolve()
         if not quiet and progress_label:
             console.print(f"[bold]{progress_label}:[/bold] {resolved}")
         return build_local_health_report(resolved, scan_config)
 
-    owner, repo = parse_github_url(target)
+    owner, repo, url_ref = parse_github_url(target)
+    # CLI --ref overrides a ref embedded in the URL when both are set.
+    resolved_ref = ref if ref is not None else url_ref
     resolved_token = token or os.getenv("GITHUB_TOKEN")
     if not quiet and progress_label:
-        console.print(f"[bold]{progress_label}:[/bold] {owner}/{repo}")
-    return build_health_report(GitHubClient(resolved_token), owner, repo, scan_config)
+        display = f"{owner}/{repo}@{resolved_ref}" if resolved_ref else f"{owner}/{repo}"
+        console.print(f"[bold]{progress_label}:[/bold] {display}")
+    return build_health_report(GitHubClient(resolved_token), owner, repo, scan_config, ref=resolved_ref)
 
 
 @app.command()
 def scan(
     url: str = typer.Argument(..., help="GitHub repository URL or local directory path."),
     token: str | None = typer.Option(None, help="GitHub token for private repositories."),
+    ref: str | None = typer.Option(
+        None,
+        "--ref",
+        help="Git branch, tag, or commit SHA to scan (overrides ref in the URL if both are set).",
+    ),
     export: Path | None = typer.Option(None, "--export", help="Export report to a Markdown file."),
     output: Path | None = typer.Option(None, "--output", help="Write the selected output format to a file."),
     output_format: str = typer.Option(
@@ -94,6 +110,7 @@ def scan(
             scan_config=scan_config,
             quiet=quiet,
             progress_label="Scanning" if selected_format == "table" else None,
+            ref=ref,
         )
 
         if export:
@@ -128,6 +145,16 @@ def compare_cmd(
     baseline: str = typer.Argument(..., help="Baseline GitHub URL or local directory path."),
     target: str = typer.Argument(..., help="Target GitHub URL or local directory path."),
     token: str | None = typer.Option(None, help="GitHub token for private repositories."),
+    baseline_ref: str | None = typer.Option(
+        None,
+        "--baseline-ref",
+        help="Git ref for the baseline (overrides ref in the baseline URL).",
+    ),
+    target_ref: str | None = typer.Option(
+        None,
+        "--target-ref",
+        help="Git ref for the target (overrides ref in the target URL).",
+    ),
     output: Path | None = typer.Option(None, "--output", help="Write the selected output format to a file."),
     output_format: str = typer.Option(
         "table",
@@ -153,7 +180,7 @@ def compare_cmd(
         help="Display label for the target (default: repository full name).",
     ),
 ):
-    """Compare two scans (e.g. main vs PR branch checkouts, or two repositories)."""
+    """Compare two scans (e.g. main vs feature via /tree/ refs, or two local checkouts)."""
     load_environment()
     try:
         selected_format = "json" if json_output else output_format.lower()
@@ -167,6 +194,7 @@ def compare_cmd(
             scan_config=scan_config,
             quiet=quiet,
             progress_label="Scanning baseline" if show_progress else None,
+            ref=baseline_ref,
         )
         target_report = scan_target(
             target,
@@ -174,6 +202,7 @@ def compare_cmd(
             scan_config=scan_config,
             quiet=quiet,
             progress_label="Scanning target" if show_progress else None,
+            ref=target_ref,
         )
         comparison = build_comparison(
             baseline_report,
@@ -201,6 +230,132 @@ def compare_cmd(
                 f"regressed checks: {', '.join(comparison.regressed) or 'score drop only'}."
             )
             raise typer.Exit(code=2)
+    except (ValueError, GitHubAPIError) as error:
+        console.print(f"[red]Error:[/red] {error}")
+        raise typer.Exit(code=1) from error
+
+
+def _resolve_github_owner_repo(target: str) -> tuple[str, str]:
+    """Resolve owner/repo from a GitHub URL or a local clone with github.com remote."""
+    path = Path(target)
+    if path.exists() and path.is_dir():
+        info = repository_info_from_path(path.resolve())
+        if info.owner == "local" or not info.url or "github.com" not in info.url:
+            raise ValueError(
+                "Creating issues requires a GitHub repository. "
+                "Pass a github.com URL, or run from a local clone with a github.com remote. "
+                "Use --dry-run to preview issue text without creating anything."
+            )
+        return info.owner, info.name
+    owner, repo, _ref = parse_github_url(target)
+    return owner, repo
+
+
+def _parse_status_set(raw: str) -> set[str]:
+    statuses = {part.strip().lower() for part in raw.split(",") if part.strip()}
+    if not statuses:
+        raise ValueError("At least one status is required (e.g. fail,warn).")
+    allowed = {"pass", "warn", "fail"}
+    unknown = statuses - allowed
+    if unknown:
+        raise ValueError(f"Unknown statuses: {', '.join(sorted(unknown))}. Use pass, warn, or fail.")
+    return statuses
+
+
+@app.command("create-issues")
+def create_issues_cmd(
+    target: str = typer.Argument(..., help="GitHub repository URL or local directory path."),
+    token: str | None = typer.Option(None, help="GitHub token with issues:write (required unless --dry-run)."),
+    config: Path | None = typer.Option(None, "--config", help="Path to a RepoPulse YAML config file."),
+    ref: str | None = typer.Option(None, "--ref", help="Git ref to scan (branch, tag, or SHA)."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print issue titles and bodies; create nothing."),
+    yes: bool = typer.Option(False, "--yes", help="Actually create issues on GitHub (requires token)."),
+    label: list[str] | None = typer.Option(
+        None,
+        "--label",
+        help="Extra label to apply (repeatable).",
+    ),
+    statuses: str = typer.Option(
+        "fail,warn",
+        "--statuses",
+        help="Comma-separated check statuses to open issues for (default: fail,warn).",
+    ),
+    quiet: bool = typer.Option(False, "--quiet", help="Suppress non-essential messages."),
+):
+    """Create GitHub issues from fail/warn health-check recommendations."""
+    load_environment()
+    try:
+        if dry_run and yes:
+            raise ValueError("Use either --dry-run or --yes, not both.")
+        if not dry_run and not yes:
+            raise ValueError("Specify --dry-run to preview or --yes to create issues.")
+
+        resolved_token = token or os.getenv("GITHUB_TOKEN")
+        if yes and not resolved_token:
+            raise ValueError("A GitHub token is required to create issues. Pass --token or set GITHUB_TOKEN.")
+
+        scan_config = load_config(config)
+        status_set = _parse_status_set(statuses)
+        report = scan_target(
+            target,
+            token=token,
+            scan_config=scan_config,
+            quiet=quiet,
+            progress_label="Scanning" if not quiet else None,
+            ref=ref,
+        )
+        payloads = issue_payloads_from_report(
+            report,
+            labels=list(label) if label else None,
+            statuses=status_set,
+        )
+
+        if not payloads:
+            if not quiet:
+                console.print("[green]No matching checks to open issues for.[/green]")
+            return
+
+        if dry_run:
+            for index, payload in enumerate(payloads, start=1):
+                console.print(f"[bold]--- Issue {index}/{len(payloads)} ---[/bold]")
+                console.print(f"[cyan]Title:[/cyan] {payload['title']}")
+                console.print(f"[cyan]Labels:[/cyan] {', '.join(payload['labels'])}")
+                console.print(payload["body"])
+                console.print()
+            if not quiet:
+                console.print(f"[green]Dry run:[/green] {len(payloads)} issue(s) would be created.")
+            return
+
+        owner, repo = _resolve_github_owner_repo(target)
+        client = GitHubClient(resolved_token)
+        created_urls: list[str] = []
+        try:
+            for payload in payloads:
+                issue = client.create_issue(
+                    owner,
+                    repo,
+                    title=payload["title"],
+                    body=payload["body"],
+                    labels=payload["labels"],
+                )
+                html_url = issue.get("html_url", "")
+                if html_url:
+                    created_urls.append(html_url)
+                if not quiet:
+                    console.print(
+                        f"[green]Created:[/green] {payload['title']}"
+                        + (f" → {html_url}" if html_url else "")
+                    )
+        except GitHubAPIError:
+            if created_urls and not quiet:
+                console.print(
+                    f"[yellow]Partial success:[/yellow] created {len(created_urls)}/{len(payloads)} issue(s):"
+                )
+                for url in created_urls:
+                    console.print(f"  {url}")
+            raise
+        if not quiet:
+            console.print(f"[green]Created {len(created_urls)} issue(s) on {owner}/{repo}.[/green]")
     except (ValueError, GitHubAPIError) as error:
         console.print(f"[red]Error:[/red] {error}")
         raise typer.Exit(code=1) from error

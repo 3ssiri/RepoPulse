@@ -132,14 +132,20 @@ def build_health_report(
     owner: str,
     repo: str,
     config: RepoPulseConfig | None = None,
+    ref: str | None = None,
 ) -> HealthReport:
     config = config or RepoPulseConfig()
     repo_data = client.get_repo(owner, repo)
     repository = repo_info_from_api(owner, repo, repo_data)
-    files = file_items_from_tree(client.get_tree(owner, repo, repository.default_branch))
+    # Tree + content loads use the explicit ref when given, otherwise the API default branch.
+    tree_ref = ref or repository.default_branch
+    # When an explicit ref is scanned, surface it as default_branch so reports/labels show which ref was used.
+    if ref is not None:
+        repository.default_branch = ref
+    files = file_items_from_tree(client.get_tree(owner, repo, tree_ref))
 
     def load(path: str) -> str | None:
-        return client.get_file_content(owner, repo, path)
+        return client.get_file_content(owner, repo, path, ref=tree_ref)
 
     readme_content, gitignore_content, package_content, pyproject_content, workflow_contents = _load_content_inputs(
         files, load
