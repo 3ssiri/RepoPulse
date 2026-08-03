@@ -15,8 +15,8 @@
 4. Create and push a tag:
 
 ```bash
-git tag -a v0.2.1 -m "RepoPulse 0.2.1"
-git push origin v0.2.1
+git tag -a v0.2.2 -m "RepoPulse 0.2.2"
+git push origin v0.2.2
 ```
 
 5. The **Release** workflow runs only for `v*` tags:
@@ -29,7 +29,7 @@ git push origin v0.2.1
 6. Install from the release:
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.2.1/repopulse-0.2.1-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.2.2/repopulse-0.2.2-py3-none-any.whl
 ```
 
 ## Optional: PyPI
