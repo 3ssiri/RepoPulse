@@ -12,16 +12,16 @@ This guide explains how to install RepoPulse for normal use and for development.
 ## Install from PyPI (recommended after first publish)
 
 ```bash
-pip install repo-pulse
+pip install repopulse-cli
 ```
 
 | | Name |
 |---|---|
-| Install (`pip`) | `repo-pulse` |
+| Install (`pip`) | `repopulse-cli` |
 | CLI | `repopulse` |
 | Import | `repopulse` |
 
-The PyPI name `repopulse` belongs to an **unrelated** package. Always use `repo-pulse` for this project. After install:
+The PyPI name `repopulse` belongs to an **unrelated** package. Always use `repopulse-cli` for this project. After install:
 
 ```bash
 repopulse --help
@@ -32,7 +32,7 @@ If the package is not on PyPI yet, use a GitHub Release wheel or the source inst
 ## Install from a GitHub Release
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.2.3/repo_pulse-0.2.3-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.1/repopulse_cli-0.3.1-py3-none-any.whl
 ```
 
 See [docs/PUBLISHING.md](docs/PUBLISHING.md) for tagging, GitHub Releases, and PyPI Trusted Publishing.

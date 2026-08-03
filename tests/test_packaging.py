@@ -14,9 +14,9 @@ def _load_project() -> dict:
     return data["project"]
 
 
-def test_pyproject_distribution_name_is_repo_pulse():
+def test_pyproject_distribution_name_is_repopulse_cli():
     project = _load_project()
-    assert project["name"] == "repo-pulse"
+    assert project["name"] == "repopulse-cli"
 
 
 def test_pyproject_cli_entry_is_repopulse():

@@ -11,11 +11,11 @@ Complete packaging/docs so the only remaining human step is the one-time PyPI Tr
 
 ## Delivered
 
-1. Verify `pyproject.toml` name is `repo-pulse`, scripts entry `repopulse`.
+1. Verify `pyproject.toml` name is `repopulse-cli`, scripts entry `repopulse`.
 2. `docs/PUBLISHING.md` clear one-shot checklist (already mostly done — tighten + add verify commands).
-3. `INSTALLATION.md` / `README.md` / `USAGE.md` use `pip install repo-pulse`.
-4. `examples/github-action-repopulse.yml` uses `repo-pulse`.
-5. Optional: small test or assertion that package metadata name is `repo-pulse` (read pyproject via tomllib in a tiny test).
+3. `INSTALLATION.md` / `README.md` / `USAGE.md` use `pip install repopulse-cli`.
+4. `examples/github-action-repopulse.yml` uses `repopulse-cli`.
+5. Optional: small test or assertion that package metadata name is `repopulse-cli` (read pyproject via tomllib in a tiny test).
 6. Do **not** set `PUBLISH_TO_PYPI=true` unless pending publisher is confirmed working.
 7. CHANGELOG Unreleased / version notes for batch 009–011 (orchestrator may own final version bump).
 

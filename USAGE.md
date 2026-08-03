@@ -200,7 +200,7 @@ repopulse scan "https://github.com/${REPO}" \
 Install in the workflow with:
 
 ```bash
-pip install repo-pulse
+pip install repopulse-cli
 ```
 
 The CLI command remains `repopulse` (do not `pip install repopulse` — that is a different package on PyPI). From a checkout of this project you can also use `pip install -e .` or `pip install -e ".[dev]"`.
