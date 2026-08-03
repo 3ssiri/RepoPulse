@@ -3,8 +3,10 @@ requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "repopulse"
-version = "0.2.2"
+# Distribution name on PyPI (pypi.org/project/repopulse/ is taken by an unrelated package).
+# Import package and CLI entry point remain `repopulse`.
+name = "repo-pulse"
+version = "0.2.3"
 description = "A CLI tool that analyzes GitHub repository health and generates quality reports."
 authors = [{ name = "Ali Assiri" }]
 readme = "README.md"

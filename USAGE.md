@@ -147,7 +147,7 @@ repopulse scan "https://github.com/${REPO}" \
   --quiet
 ```
 
-Install in the workflow with `pip install repopulse`. While the package is not on PyPI yet, use `pip install -e .` (or `pip install -e ".[dev]"`) from a checkout of this project.
+Install in the workflow with `pip install repo-pulse` (CLI command remains `repopulse`). From a checkout of this project you can also use `pip install -e .` or `pip install -e ".[dev]"`.
 
 ## Configuration File
 
