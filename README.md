@@ -68,10 +68,10 @@ RepoPulse is built with:
 
 ## Installation
 
-When published on PyPI:
+From PyPI (project name `repo-pulse`; CLI is still `repopulse`):
 
 ```bash
-pip install repopulse
+pip install repo-pulse
 ```
 
 Or clone and install from source:

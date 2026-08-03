@@ -4,7 +4,7 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 ## Near Term
 
-- Publish installation-ready releases. (Partial: GitHub Releases via tag workflow `v*`; PyPI still optional — see `docs/PUBLISHING.md`.)
+- ~~Publish installation-ready releases.~~ Done — GitHub Releases on `v*` tags; PyPI as `repo-pulse` via Trusted Publishing (enable with `PUBLISH_TO_PYPI` — see `docs/PUBLISHING.md`).
 - Expand check coverage for common Python, JavaScript, and documentation patterns. (Partial: deeper tests/Actions heuristics shipped.)
 - ~~Add richer Markdown reports for maintainers and contributors.~~ Done — attention sections, pass/warn/fail counts, applied config.
 - ~~Improve JSON output stability for automation.~~ Done — sorted keys + [json-schema.md](json-schema.md) contract for `schema_version` 1.0.
@@ -31,6 +31,5 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 ## Later ideas
 
-- Publish to PyPI (`pip install repopulse`).
 - Optional `gh issue create` integration from issues format.
 - GitHub ref-aware compare (scan a remote tag/branch without local checkout).

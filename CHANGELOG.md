@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.2.3 - 2026-08-04
+
+- PyPI distribution name is `repo-pulse` (`pip install repo-pulse`); CLI/import remain `repopulse`.
+- Reason: `repopulse` on PyPI is an unrelated package we do not own.
+- Release workflow can publish to PyPI via Trusted Publishing when repository variable `PUBLISH_TO_PYPI=true` and the PyPI pending publisher are configured (see `docs/PUBLISHING.md`).
+
 ## 0.2.2 - 2026-08-04
 
 - Added `repopulse compare <baseline> <target>` to diff two health scans (local paths and/or GitHub URLs).
