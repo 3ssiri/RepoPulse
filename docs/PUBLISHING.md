@@ -4,15 +4,16 @@
 
 | Role | Name |
 |---|---|
-| **PyPI / `pip install`** | `repo-pulse` |
+| **PyPI / `pip install`** | `repopulse-cli` |
 | **CLI command** | `repopulse` |
 | **Python import** | `repopulse` |
 
 The name `repopulse` on PyPI is already taken by an **unrelated** package ([pypi.org/project/repopulse](https://pypi.org/project/repopulse/) — “GitHub Intelligence Engine”, not this project).  
+Hyphenated `repo-pulse` is also **rejected** by PyPI as “too similar” to that name.  
 Always install ours with:
 
 ```bash
-pip install repo-pulse
+pip install repopulse-cli
 repopulse --help
 ```
 
@@ -28,7 +29,7 @@ Do this **once** as a human. Agents and CI must **not** invent credentials or se
 
 1. Account on [pypi.org](https://pypi.org/account/register/) with **2FA** enabled.
 2. **Publishing** → **Add a new pending publisher**:
-   - **PyPI project name:** `repo-pulse`
+   - **PyPI project name:** `repopulse-cli`
    - **Owner:** `3ssiri`
    - **Repository:** `RepoPulse`
    - **Workflow name:** `release.yml` (filename under `.github/workflows/`)
@@ -55,7 +56,7 @@ From `.github/workflows/release.yml`:
   - ref is a tag `v*`, **and**
   - repository variable `vars.PUBLISH_TO_PYPI == 'true'`
 - Uses environment `pypi` and `permissions: id-token: write`
-- Publishes to https://pypi.org/project/repo-pulse/
+- Publishes to https://pypi.org/project/repopulse-cli/
 
 ---
 
@@ -67,8 +68,8 @@ From `.github/workflows/release.yml`:
 4. Create and push a tag:
 
 ```bash
-git tag -a v0.2.3 -m "RepoPulse 0.2.3"
-git push origin v0.2.3
+git tag -a v0.3.1 -m "RepoPulse 0.3.1"
+git push origin v0.3.1
 ```
 
 5. The **Release** workflow runs only for `v*` tags:
@@ -82,14 +83,14 @@ git push origin v0.2.3
 6. Install from the GitHub Release (always works after a successful tag release):
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.2.3/repo_pulse-0.2.3-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.1/repopulse_cli-0.3.1-py3-none-any.whl
 ```
 
 ### First / next PyPI publish
 
 After the pending publisher and `PUBLISH_TO_PYPI` variable are set, push a new `v*` tag (or re-run a failed **Publish to PyPI** job after fixing publisher config).
 
-Package page (after first success): https://pypi.org/project/repo-pulse/
+Package page (after first success): https://pypi.org/project/repopulse-cli/
 
 ---
 
@@ -97,7 +98,7 @@ Package page (after first success): https://pypi.org/project/repo-pulse/
 
 ```bash
 # Install from PyPI (not the foreign package named repopulse)
-pip install --upgrade repo-pulse
+pip install --upgrade repopulse-cli
 
 # CLI entry point
 repopulse --help
@@ -106,10 +107,10 @@ repopulse --help
 python -c "import repopulse; print(repopulse.__version__)"
 
 # Optional: confirm index sees the project
-pip index versions repo-pulse
+pip index versions repopulse-cli
 ```
 
-Expect the version you just tagged (e.g. `0.2.3`). If `pip install repopulse` installs something else, you hit the name collision — use `repo-pulse`.
+Expect the version you just tagged (e.g. `0.3.1`). If `pip install repopulse` installs something else, you hit the name collision — use `repopulse-cli`.
 
 ---
 
@@ -121,12 +122,12 @@ ruff check .
 pytest -q
 python -m build
 python -m twine check dist/*
-pip install dist/repo_pulse-*.whl --force-reinstall
+pip install dist/repopulse_cli-*.whl --force-reinstall
 repopulse --help
 python -c "import repopulse; print(repopulse.__version__)"
 ```
 
-Confirm `pyproject.toml` has `name = "repo-pulse"` and `[project.scripts]` entry `repopulse = "repopulse.cli:app"`.
+Confirm `pyproject.toml` has `name = "repopulse-cli"` and `[project.scripts]` entry `repopulse = "repopulse.cli:app"`.
 
 ---
 
@@ -136,4 +137,4 @@ Confirm `pyproject.toml` has `name = "repo-pulse"` and `[project.scripts]` entry
 2. **License metadata** used the old TOML table form and flooded `python -m build` with Setuptools deprecation warnings.
 3. **CI ran on every branch push**, so failed historical merges polluted the Actions list.
 4. **No automated attach** of wheel/sdist to the GitHub Release.
-5. **PyPI name `repopulse` is taken** — distribution name is **`repo-pulse`**; CLI/import stay **`repopulse`**.
+5. **PyPI name `repopulse` is taken** — distribution name is **`repopulse-cli`**; CLI/import stay **`repopulse`**.

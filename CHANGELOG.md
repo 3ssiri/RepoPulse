@@ -2,17 +2,21 @@
 
 ## Unreleased
 
+## 0.3.1 - 2026-08-04
+
+- PyPI distribution name is **`repopulse-cli`** (`pip install repopulse-cli`); CLI/import remain `repopulse`.
+- `repo-pulse` was rejected by PyPI as too similar to the existing unrelated package `repopulse`.
+
 ## 0.3.0 - 2026-08-04
 
 - GitHub ref-aware scan: `/tree/<ref>`, `/releases/tag/<tag>`, and `--ref` (no local checkout required).
 - Compare supports per-side refs via tree URLs or `--baseline-ref` / `--target-ref`.
 - New command `repopulse create-issues` to open GitHub issues from fail/warn checks (`--dry-run` / `--yes`).
-- Packaging/docs: install as `repo-pulse` on PyPI; CLI remains `repopulse`.
+- Packaging/docs for PyPI install path (name finalized in 0.3.1 as `repopulse-cli`).
 
 ## 0.2.3 - 2026-08-04
 
-- PyPI distribution name is `repo-pulse` (`pip install repo-pulse`); CLI/import remain `repopulse`.
-- Reason: `repopulse` on PyPI is an unrelated package we do not own.
+- Packaging prep for PyPI under a non-colliding distribution name; CLI/import remain `repopulse`.
 - Release workflow can publish to PyPI via Trusted Publishing when repository variable `PUBLISH_TO_PYPI=true` and the PyPI pending publisher are configured (see `docs/PUBLISHING.md`).
 
 ## 0.2.2 - 2026-08-04
