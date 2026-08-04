@@ -100,18 +100,23 @@ Content-light heuristics only (no network, no test execution). Max remains 15.
 
 Workflows under `.github/workflows/` only. Max remains 15.
 
-| Condition | Points |
+Scoring uses **workflow content** first, then **basename hints** (`tests.yaml`, `run-tests.yml`, `ci.yml`, …) and CI plumbing (setup actions, PR/push triggers).
+
+| Condition (simplified) | Points (typical) |
 |---|---:|
-| Workflows + tests + quality | 15 |
-| Workflows + tests, no quality | 12 |
-| Workflows + quality only | 10 |
-| Workflows only (no test/quality signal) | 6 |
+| Content tests + quality | 15 |
+| Content tests + setup/triggers | 13 |
+| Content tests only | 12 |
+| Quality + test-named workflow | 13 |
+| Quality + setup + PR/push | 12 |
+| Quality only / thin CI | 8–11 |
+| Workflows only (no useful signals) | 6 |
 | No workflows | 0 |
 
-Status: pass if score ≥ 12, warn if 1–11, fail if 0.
+Status: **pass** if score ≥ 12, **warn** if 1–11, **fail** if 0.
 
-**Test tokens (examples):** `pytest`, `python -m pytest`, `npm test`, `npm run test`, `pnpm test`, `yarn test`, `vitest`, `jest`, `cargo test`, `go test`, `unittest`
+**Test tokens (examples):** `pytest`, `python -m pytest`, `tox`, `nox`, `npm test`, `vitest`, `jest`, `cargo test`, `go test`, `make test`, `coverage run`
 
-**Quality tokens (examples):** `ruff`, `eslint`, `flake8`, `mypy`, `lint`, `prettier`, `black`, `format`
+**Quality tokens (examples):** `ruff`, `eslint`, `flake8`, `mypy`, `pre-commit`, `lint`, `black`, `pyright`
 
-**Also noted in the message when present:** setup steps (`actions/setup-python`, `actions/setup-node`, `pip install`, `npm ci`, `pnpm install`) and triggers (`pull_request`, `push:`).
+**Recommendations** name the real gap (e.g. “add a test step”) instead of telling maintainers to add workflows when workflows already exist.

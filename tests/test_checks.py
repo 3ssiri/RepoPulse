@@ -187,7 +187,7 @@ def test_actions_check_workflows_only_scores_six():
     assert result.status == "warn"
 
 
-def test_actions_check_tests_without_quality_scores_twelve():
+def test_actions_check_tests_without_quality_scores_twelve_or_higher():
     files = [item(".github/workflows/ci.yml")]
     workflows = {
         ".github/workflows/ci.yml": "on:\n  push:\njobs:\n  test:\n    steps:\n      - run: python -m pytest\n"
@@ -195,7 +195,8 @@ def test_actions_check_tests_without_quality_scores_twelve():
 
     result = run_actions_check(files, workflows)
 
-    assert result.score == 12
+    # Content tests + trigger → at least 12; setup/triggers can raise to 13.
+    assert result.score >= 12
     assert result.status == "pass"
     assert "tests" in result.message.lower()
 
@@ -210,6 +211,62 @@ def test_actions_check_quality_only_scores_ten():
 
     assert result.score == 10
     assert result.status == "warn"
+    # Do not tell maintainers to "add workflows" when they already have one.
+    assert "name or add workflows" not in " ".join(result.recommendations).lower()
+
+
+def test_actions_check_quality_plus_setup_triggers_is_pass():
+    """Mature lint CI without pytest string should not be stuck at a weak warn."""
+    files = [item(".github/workflows/lint.yml")]
+    workflows = {
+        ".github/workflows/lint.yml": (
+            "on:\n  pull_request:\n  push:\n"
+            "jobs:\n  lint:\n    steps:\n"
+            "      - uses: actions/setup-python@v5\n"
+            "      - run: ruff check .\n"
+        )
+    }
+
+    result = run_actions_check(files, workflows)
+
+    assert result.score >= 12
+    assert result.status == "pass"
+
+
+def test_actions_check_test_filename_hint_with_quality():
+    files = [
+        item(".github/workflows/tests.yaml"),
+        item(".github/workflows/pre-commit.yaml"),
+    ]
+    workflows = {
+        ".github/workflows/tests.yaml": (
+            "on: [push]\njobs:\n  t:\n    steps:\n"
+            "      - uses: actions/setup-python@v5\n"
+            "      - run: echo run suite\n"
+        ),
+        ".github/workflows/pre-commit.yaml": (
+            "jobs:\n  pc:\n    steps:\n      - run: pre-commit run --all-files\n"
+        ),
+    }
+
+    result = run_actions_check(files, workflows)
+
+    assert result.score >= 12
+    assert result.status == "pass"
+    assert "test-named" in result.message.lower() or "quality" in result.message.lower()
+
+
+def test_actions_check_detects_tox_as_test_signal():
+    files = [item(".github/workflows/ci.yml")]
+    workflows = {
+        ".github/workflows/ci.yml": "jobs:\n  test:\n    steps:\n      - run: tox -e py\n"
+    }
+
+    result = run_actions_check(files, workflows)
+
+    assert result.score >= 12
+    assert result.status == "pass"
+    assert "tests" in result.message.lower()
 
 
 def test_dependencies_check_rewards_lockfile_and_dependabot():

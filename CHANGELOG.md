@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `create-issues` skips open GitHub issues with the same exact title (default); use `--no-dedupe` to force create.
+- Deeper GitHub Actions check: more test/quality/setup tokens, workflow basename hints (`tests.yaml`, `ci.yml`, …), fairer scores for mature CI, gap-specific recommendations.
 
 ## 0.3.2 - 2026-08-04
 
