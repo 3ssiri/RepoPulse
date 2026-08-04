@@ -6,6 +6,11 @@
 [![Python](https://img.shields.io/pypi/pyversions/repopulse-cli.svg)](https://pypi.org/project/repopulse-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+```bash
+pip install repopulse-cli
+repopulse scan .
+```
+
 RepoPulse is a Python CLI that scans GitHub repositories (or a local folder) and produces a practical **health report**: score out of 100, pass/warn/fail checks, and actionable recommendations.
 
 It is built for developers who want a quick quality review from the terminal, and for maintainers who want a small tool in CI, release prep, or issue triage.

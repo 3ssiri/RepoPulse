@@ -6,6 +6,11 @@
 [![Python](https://img.shields.io/pypi/pyversions/repopulse-cli.svg)](https://pypi.org/project/repopulse-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+```bash
+pip install repopulse-cli
+repopulse scan .
+```
+
 **RepoPulse** أداة سطر أوامر بلغة بايثون تفحص مستودعات GitHub (أو مجلدًا محليًا) وتنتج **تقرير صحة** عمليًا: درجة من 100، فحوصات ناجح/تحذير/فشل، وتوصيات قابلة للتنفيذ.
 
 موجّهة للمطوّرين الذين يريدون مراجعة سريعة من الطرفية، وللمحافظين الذين يحتاجون أداة خفيفة في CI أو قبل الإصدار أو عند فرز المهام.
