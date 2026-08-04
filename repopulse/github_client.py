@@ -67,6 +67,36 @@ class GitHubClient:
             return None
         return base64.b64decode(data["content"]).decode("utf-8", errors="ignore")
 
+    def list_open_issue_titles(self, owner: str, repo: str) -> set[str]:
+        """Return titles of open issues (not PRs) for dedupe. Paginates through the API."""
+        titles: set[str] = set()
+        page = 1
+        per_page = 100
+        while True:
+            url = (
+                f"{self.base_url}/repos/{owner}/{repo}/issues"
+                f"?state=open&per_page={per_page}&page={page}"
+            )
+            data = self._get(url, timeout=30).json()
+            if not isinstance(data, list) or not data:
+                break
+            for item in data:
+                if not isinstance(item, dict):
+                    continue
+                # Issues API includes pull requests; skip those.
+                if "pull_request" in item:
+                    continue
+                title = item.get("title")
+                if isinstance(title, str) and title:
+                    titles.add(title)
+            if len(data) < per_page:
+                break
+            page += 1
+            if page > 50:
+                # Safety cap: 5000 open issues is enough for dedupe purposes.
+                break
+        return titles
+
     def create_issue(
         self,
         owner: str,

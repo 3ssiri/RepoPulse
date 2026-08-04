@@ -1,5 +1,6 @@
 from repopulse.issue_export import (
     DEFAULT_ISSUE_STATUSES,
+    filter_payloads_against_open_titles,
     issue_payloads_from_report,
     issue_title_for_check,
 )
@@ -148,3 +149,27 @@ def test_title_truncation():
     assert len(title) == 80
     assert title.endswith("...")
     assert title.startswith("[RepoPulse] ")
+
+
+def test_filter_payloads_against_open_titles_skips_exact_matches():
+    payloads = [
+        {"title": "[RepoPulse] License: fail", "body": "a", "labels": []},
+        {"title": "[RepoPulse] Tests: warn", "body": "b", "labels": []},
+        {"title": "[RepoPulse] README Quality: fail", "body": "c", "labels": []},
+    ]
+    open_titles = {"[RepoPulse] License: fail", "[RepoPulse] Other: fail"}
+
+    to_create, skipped = filter_payloads_against_open_titles(payloads, open_titles)
+
+    assert [p["title"] for p in to_create] == [
+        "[RepoPulse] Tests: warn",
+        "[RepoPulse] README Quality: fail",
+    ]
+    assert [p["title"] for p in skipped] == ["[RepoPulse] License: fail"]
+
+
+def test_filter_payloads_empty_open_titles_creates_all():
+    payloads = [{"title": "[RepoPulse] License: fail", "body": "a", "labels": []}]
+    to_create, skipped = filter_payloads_against_open_titles(payloads, set())
+    assert to_create == payloads
+    assert skipped == []

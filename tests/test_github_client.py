@@ -102,6 +102,40 @@ def test_get_tree_error_mentions_ref(monkeypatch):
         raise AssertionError("Expected GitHubAPIError")
 
 
+def test_list_open_issue_titles_paginates_and_skips_prs(monkeypatch):
+    pages = {
+        1: [
+            {"title": "[RepoPulse] License: fail", "number": 1},
+            {"title": "PR title", "number": 2, "pull_request": {"url": "https://..."}},
+            {"title": "[RepoPulse] Tests: warn", "number": 3},
+        ],
+        2: [],
+    }
+
+    def fake_get(url, headers=None, timeout=None):
+        class FakeResponse:
+            status_code = 200
+            headers = None
+            text = ""
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                if "page=1" in url:
+                    return pages[1]
+                return pages[2]
+
+        return FakeResponse()
+
+    monkeypatch.setattr(requests, "get", fake_get)
+
+    titles = GitHubClient(token="t").list_open_issue_titles("owner", "repo")
+
+    assert titles == {"[RepoPulse] License: fail", "[RepoPulse] Tests: warn"}
+    assert "PR title" not in titles
+
+
 def test_create_issue_posts_payload(monkeypatch):
     captured: dict = {}
 

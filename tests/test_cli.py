@@ -264,6 +264,7 @@ def test_create_issues_requires_dry_run_or_yes(monkeypatch):
 
 
 def test_create_issues_dry_run(monkeypatch):
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     monkeypatch.setattr(
         "repopulse.cli.scan_target",
         lambda *args, **kwargs: _report_with_fail(),
@@ -283,6 +284,9 @@ def test_create_issues_yes_calls_api(monkeypatch):
     class FakeClient:
         def __init__(self, token=None):
             self.token = token
+
+        def list_open_issue_titles(self, owner, repo):
+            return set()
 
         def create_issue(self, owner, repo, title, body, labels=None):
             calls.append(
@@ -320,6 +324,79 @@ def test_create_issues_yes_calls_api(monkeypatch):
     assert calls[0]["repo"] == "repo"
     assert calls[0]["title"] == "[RepoPulse] License: fail"
     assert "repopulse" in calls[0]["labels"]
+
+
+def test_create_issues_dedupes_open_titles(monkeypatch):
+    create_calls: list[str] = []
+
+    class FakeClient:
+        def __init__(self, token=None):
+            pass
+
+        def list_open_issue_titles(self, owner, repo):
+            return {"[RepoPulse] License: fail"}
+
+        def create_issue(self, owner, repo, title, body, labels=None):
+            create_calls.append(title)
+            return {"html_url": f"https://github.com/{owner}/{repo}/issues/2"}
+
+    monkeypatch.setattr(
+        "repopulse.cli.scan_target",
+        lambda *args, **kwargs: _report_with_fail(),
+    )
+    monkeypatch.setattr("repopulse.cli.GitHubClient", FakeClient)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "create-issues",
+            "https://github.com/owner/repo",
+            "--yes",
+            "--token",
+            "ghs_test",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert create_calls == []
+    assert "Skip" in result.output or "already open" in result.output
+
+
+def test_create_issues_no_dedupe_forces_create(monkeypatch):
+    create_calls: list[str] = []
+
+    class FakeClient:
+        def __init__(self, token=None):
+            pass
+
+        def list_open_issue_titles(self, owner, repo):
+            raise AssertionError("list_open_issue_titles should not be called with --no-dedupe")
+
+        def create_issue(self, owner, repo, title, body, labels=None):
+            create_calls.append(title)
+            return {"html_url": f"https://github.com/{owner}/{repo}/issues/3"}
+
+    monkeypatch.setattr(
+        "repopulse.cli.scan_target",
+        lambda *args, **kwargs: _report_with_fail(),
+    )
+    monkeypatch.setattr("repopulse.cli.GitHubClient", FakeClient)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "create-issues",
+            "https://github.com/owner/repo",
+            "--yes",
+            "--token",
+            "ghs_test",
+            "--no-dedupe",
+            "--quiet",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert create_calls == ["[RepoPulse] License: fail"]
 
 
 def test_create_issues_local_yes_without_github_remote_errors(monkeypatch, tmp_path):

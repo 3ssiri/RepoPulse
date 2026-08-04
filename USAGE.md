@@ -142,6 +142,9 @@ repopulse create-issues https://github.com/owner/repo --yes --token "$GITHUB_TOK
 repopulse create-issues https://github.com/owner/repo --yes \
   --statuses fail \
   --label maintenance
+
+# Force create even if an open issue with the same title exists
+repopulse create-issues https://github.com/owner/repo --yes --no-dedupe
 ```
 
 | Flag | Purpose |
@@ -152,8 +155,11 @@ repopulse create-issues https://github.com/owner/repo --yes \
 | `--label` | Extra label (repeatable). |
 | `--ref` | Scan a specific branch/tag before building issues. |
 | `--token` | GitHub token (or `GITHUB_TOKEN` env). |
+| `--no-dedupe` | Do not skip titles that already match an open issue. |
 
 You must pass either `--dry-run` or `--yes` (not both).
+
+**Dedupe (default on):** when a GitHub repo and token are available, RepoPulse lists **open** issues and skips any payload whose title matches exactly (e.g. `[RepoPulse] License: fail`). Pull requests are ignored. Dry-run with a token also shows what would be skipped.
 
 ## CI Threshold
 

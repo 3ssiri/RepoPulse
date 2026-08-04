@@ -8,7 +8,10 @@ from repopulse.analyzer import build_health_report, build_local_health_report
 from repopulse.compare import build_comparison, has_regression
 from repopulse.config import load_environment
 from repopulse.github_client import GitHubAPIError, GitHubClient
-from repopulse.issue_export import issue_payloads_from_report
+from repopulse.issue_export import (
+    filter_payloads_against_open_titles,
+    issue_payloads_from_report,
+)
 from repopulse.local_source import repository_info_from_path
 from repopulse.models import HealthReport
 from repopulse.report import (
@@ -280,9 +283,17 @@ def create_issues_cmd(
         "--statuses",
         help="Comma-separated check statuses to open issues for (default: fail,warn).",
     ),
+    no_dedupe: bool = typer.Option(
+        False,
+        "--no-dedupe",
+        help="Create issues even when an open issue with the same title already exists.",
+    ),
     quiet: bool = typer.Option(False, "--quiet", help="Suppress non-essential messages."),
 ):
-    """Create GitHub issues from fail/warn health-check recommendations."""
+    """Create GitHub issues from fail/warn health-check recommendations.
+
+    By default, skips titles that already match an open GitHub issue (exact title match).
+    """
     load_environment()
     try:
         if dry_run and yes:
@@ -315,6 +326,44 @@ def create_issues_cmd(
                 console.print("[green]No matching checks to open issues for.[/green]")
             return
 
+        skipped: list[dict] = []
+        # Dedupe when we can resolve a GitHub repo and have a token (create path always;
+        # dry-run when token is available so preview matches what --yes would do).
+        if not no_dedupe:
+            try:
+                owner, repo = _resolve_github_owner_repo(target)
+            except ValueError:
+                owner, repo = None, None
+            if owner and repo and resolved_token:
+                client = GitHubClient(resolved_token)
+                try:
+                    open_titles = client.list_open_issue_titles(owner, repo)
+                except GitHubAPIError as error:
+                    if dry_run:
+                        if not quiet:
+                            console.print(
+                                f"[yellow]Dedupe skipped (could not list open issues):[/yellow] {error}"
+                            )
+                        open_titles = set()
+                    else:
+                        raise
+                payloads, skipped = filter_payloads_against_open_titles(payloads, open_titles)
+                if skipped and not quiet:
+                    for payload in skipped:
+                        console.print(
+                            f"[yellow]Skip (open issue exists):[/yellow] {payload['title']}"
+                        )
+
+        if not payloads:
+            if not quiet:
+                if skipped:
+                    console.print(
+                        f"[green]Nothing to create:[/green] {len(skipped)} issue(s) already open."
+                    )
+                else:
+                    console.print("[green]No matching checks to open issues for.[/green]")
+            return
+
         if dry_run:
             for index, payload in enumerate(payloads, start=1):
                 console.print(f"[bold]--- Issue {index}/{len(payloads)} ---[/bold]")
@@ -323,7 +372,10 @@ def create_issues_cmd(
                 console.print(payload["body"])
                 console.print()
             if not quiet:
-                console.print(f"[green]Dry run:[/green] {len(payloads)} issue(s) would be created.")
+                extra = f" ({len(skipped)} skipped as already open)" if skipped else ""
+                console.print(
+                    f"[green]Dry run:[/green] {len(payloads)} issue(s) would be created{extra}."
+                )
             return
 
         owner, repo = _resolve_github_owner_repo(target)
@@ -355,7 +407,10 @@ def create_issues_cmd(
                     console.print(f"  {url}")
             raise
         if not quiet:
-            console.print(f"[green]Created {len(created_urls)} issue(s) on {owner}/{repo}.[/green]")
+            extra = f" ({len(skipped)} skipped as already open)" if skipped else ""
+            console.print(
+                f"[green]Created {len(created_urls)} issue(s) on {owner}/{repo}{extra}.[/green]"
+            )
     except (ValueError, GitHubAPIError) as error:
         console.print(f"[red]Error:[/red] {error}")
         raise typer.Exit(code=1) from error

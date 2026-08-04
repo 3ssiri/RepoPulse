@@ -13,7 +13,7 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 ## Maintainer Automation
 
 - ~~Generate issue-ready recommendations from failed checks.~~ Done — `--format issues`.
-- ~~Create GitHub issues from recommendations.~~ Done — `repopulse create-issues` (`--dry-run` / `--yes`).
+- ~~Create GitHub issues from recommendations.~~ Done — `repopulse create-issues` (`--dry-run` / `--yes`; dedupe open titles by default, `--no-dedupe` to force).
 - ~~Expand configurable score weights with named profiles.~~ Done — `strict` \| `library` \| `docs` \| `release`.
 - ~~Add comparison reports across releases or branches.~~ Done — `repopulse compare <baseline> <target>` with `--fail-on-regression`.
 - ~~GitHub ref-aware scan/compare without local checkout.~~ Done — `/tree/<ref>`, `/releases/tag/<tag>`, `--ref` / `--baseline-ref` / `--target-ref`.
@@ -33,5 +33,4 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 ## Later ideas
 
-- Deduplicate `create-issues` against already-open GitHub issues with the same title.
 - Expand language-specific check depth (Python/JS/docs patterns beyond current heuristics).

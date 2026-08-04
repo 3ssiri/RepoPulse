@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `create-issues` skips open GitHub issues with the same exact title (default); use `--no-dedupe` to force create.
+
 ## 0.3.2 - 2026-08-04
 
 - Documentation refresh: install as `repopulse-cli` for end users, full feature list (scan/ref/compare/create-issues), updated README (en/ar/es), INSTALLATION, USAGE, REQUIREMENTS, ARCHITECTURE, and publishing notes.

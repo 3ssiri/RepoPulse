@@ -57,3 +57,22 @@ def issue_payloads_from_report(
             }
         )
     return payloads
+
+
+def filter_payloads_against_open_titles(
+    payloads: list[dict],
+    open_titles: set[str] | frozenset[str],
+) -> tuple[list[dict], list[dict]]:
+    """Split payloads into (to_create, skipped) by exact title match against open issues.
+
+    Matching is case-sensitive exact string equality (same as GitHub titles as returned).
+    """
+    to_create: list[dict] = []
+    skipped: list[dict] = []
+    for payload in payloads:
+        title = payload.get("title", "")
+        if title in open_titles:
+            skipped.append(payload)
+        else:
+            to_create.append(payload)
+    return to_create, skipped
