@@ -14,3 +14,7 @@ coverage/
 htmlcov/
 *.egg-info/
 .DS_Store
+
+dist-pypi/
+.cursor/
+

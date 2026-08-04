@@ -3,8 +3,11 @@ requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "repopulse"
-version = "0.2.1"
+# Distribution name on PyPI.
+# `repopulse` is taken; `repo-pulse` is blocked as too similar — use `repopulse-cli`.
+# Import package and CLI entry point remain `repopulse`.
+name = "repopulse-cli"
+version = "0.3.2"
 description = "A CLI tool that analyzes GitHub repository health and generates quality reports."
 authors = [{ name = "Ali Assiri" }]
 readme = "README.md"
@@ -36,9 +39,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=9.1.1",
-    "ruff>=0.16.0",
+    "ruff>=0.16.1",
     "mypy>=2.3.0",
-    "types-PyYAML>=6.0.12.20260518",
+    "types-PyYAML>=6.0.12.20260724",
     "build>=1.2.0"
 ]
 

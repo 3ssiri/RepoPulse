@@ -5,10 +5,9 @@
 # - RepoPulse scans the GitHub repository URL (via the GitHub API), not the local
 #   checkout on the runner. That matches the current CLI design.
 # - Optional: add --config .repopulse.yml if you keep a config file in the repo.
-# - If the package is not on PyPI yet, install from source instead:
-#     pip install -e .
-#   or for local/dev with extras:
-#     pip install -e ".[dev]"
+# - PyPI package name is `repopulse-cli` (CLI remains `repopulse`).
+#   Do not `pip install repopulse` — that is an unrelated package on PyPI.
+# - If not installing from PyPI, use a checkout + `pip install -e .` instead.
 name: RepoPulse
 
 on:
@@ -24,9 +23,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      # Install from PyPI (package name repopulse-cli; CLI is repopulse)
       - name: Install RepoPulse
-        run: pip install repopulse
-        # Local/dev alternative while unreleased:
+        run: pip install repopulse-cli
+        # Local/dev alternative from a checkout of this project:
         # run: pip install -e ".[dev]"
       - name: Scan this repository on GitHub
         env:
