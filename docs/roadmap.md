@@ -5,7 +5,7 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 ## Near Term
 
 - ~~Publish installation-ready releases.~~ Done — GitHub Releases on `v*` tags **and** PyPI package [`repopulse-cli`](https://pypi.org/project/repopulse-cli/) (CLI `repopulse`). Maintainers: [docs/PUBLISHING.md](PUBLISHING.md).
-- Expand check coverage for common Python, JavaScript, and documentation patterns. (Partial: deeper tests/Actions heuristics shipped.)
+- ~~Expand check coverage for common Python, JavaScript, and documentation patterns.~~ Done for Actions + Tests heuristics (tox/nox/hatch/jest/…); further ecosystems still welcome as contributions.
 - ~~Add richer Markdown reports for maintainers and contributors.~~ Done — attention sections, pass/warn/fail counts, applied config.
 - ~~Improve JSON output stability for automation.~~ Done — sorted keys + [json-schema.md](json-schema.md) contract for `schema_version` 1.0.
 - ~~Add examples for running RepoPulse in GitHub Actions.~~ Done — see `examples/github-action-repopulse.yml` and USAGE.md CI section.
@@ -27,10 +27,11 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 ## Community
 
-- Keep contributor setup lightweight.
-- Label beginner-friendly issues.
-- Use public issues for roadmap discussion and private advisories for vulnerabilities.
+- ~~Keep contributor setup lightweight.~~ Done — [CONTRIBUTING.md](../CONTRIBUTING.md) with false-positive reporting.
+- Label beginner-friendly issues (`good first issue`) when filing small keyword/test tasks.
+- Use public issues for roadmap discussion and private advisories for vulnerabilities ([SECURITY.md](../SECURITY.md)).
 
 ## Later ideas
 
-- Expand language-specific check depth (Python/JS/docs patterns beyond current heuristics).
+- Ecosystem-specific plugins or optional deeper parsers (e.g. full Makefile targets).
+- Dedupe create-issues by label + check key as well as title.

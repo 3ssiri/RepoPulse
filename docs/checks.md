@@ -82,20 +82,22 @@ RepoPulse checks sensitive file **names** only. It does not print sensitive file
 
 Content-light heuristics only (no network, no test execution). Max remains 15.
 
-| Condition | Points |
-|---|---:|
-| Test dir or files **and** a test command (optional framework label in message) | 15 |
-| Test dir **and** test files, no command | 12 |
-| Only dir **or** only files | 7 |
-| Framework config only (e.g. pytest in pyproject, no test files) | 4 |
-| Nothing | 0 |
+| Condition | Points | Status |
+|---|---:|---|
+| Test dir/files **and** a test command/config | 15 | pass |
+| Test dir **and** files **and** framework signal (e.g. conftest), no command file | 13 | pass |
+| Test dir **and** files, no command/framework | 12 | warn |
+| Only dir **or** only files | 7 | warn |
+| Framework config only (no test files) | 4 | warn |
+| Nothing | 0 | fail |
 
 **Signals considered:**
 
-- Directories: `tests/`, `test/`, `__tests__/`
+- Directories: `tests/`, `test/`, `__tests__/`, `spec/`
 - Files: `test_*`, `*_test.py`, `*.test.*`, `*.spec.*`
-- Python: `pytest` / `[tool.pytest.ini_options]` in pyproject, `pytest.ini`, `conftest.py`, `tox.ini`
-- Node: `scripts.test` in package.json; runners `jest`, `vitest`, `mocha`, `ava`, `node:test` in scripts or deps
+- Command/config files: `pytest.ini`, `tox.ini`, `noxfile.py`, `hatch.toml`, `jest.config.*`, `vitest.config.*`, `phpunit.xml`, …
+- Python pyproject markers: `pytest`, `[tool.pytest…]`, `[tool.tox]`, `[tool.nox]`, `[tool.hatch]`, `[tool.coverage]`, `[tool.poe]`, …
+- Node: `scripts.test` in package.json; runners `jest`, `vitest`, `mocha`, `ava`, `node:test`, …
 
 ## GitHub Actions Scoring
 

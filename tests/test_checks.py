@@ -190,10 +190,31 @@ def test_tests_check_conftest_signals_pytest_framework():
 
     result = run_tests_check(files)
 
-    # Dir + files, no package/pytest.ini command → 12; conftest labels framework.
-    assert result.score == 12
-    assert result.status == "warn"
+    # Dir + files + conftest → 13 pass (framework present; optional command rec).
+    assert result.score == 13
+    assert result.status == "pass"
     assert "pytest" in result.message.lower()
+
+
+def test_tests_check_noxfile_counts_as_command():
+    files = [
+        item("tests/test_app.py"),
+        item("noxfile.py"),
+    ]
+    result = run_tests_check(files)
+    assert result.score == 15
+    assert result.status == "pass"
+
+
+def test_tests_check_hatch_in_pyproject_counts_as_command():
+    files = [item("tests/test_app.py"), item("pyproject.toml")]
+    pyproject = """
+    [tool.hatch.envs.test]
+    dependencies = ["pytest"]
+    """
+    result = run_tests_check(files, pyproject_content=pyproject)
+    assert result.score == 15
+    assert result.status == "pass"
 
 
 def test_tests_check_pytest_ini_counts_as_test_command():

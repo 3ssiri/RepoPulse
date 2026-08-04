@@ -45,7 +45,7 @@ pip install repopulse-cli
 From a GitHub Release wheel (if you prefer not to use PyPI):
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.3/repopulse_cli-0.3.3-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.4/repopulse_cli-0.3.4-py3-none-any.whl
 ```
 
 Full install notes: [INSTALLATION.md](INSTALLATION.md).
@@ -206,6 +206,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [INSTALLATION.md](INSTALLATION.md).
 | [docs/json-schema.md](docs/json-schema.md) | JSON report contract |
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | Releases and PyPI publishing (maintainers) |
 | [docs/roadmap.md](docs/roadmap.md) | Product roadmap |
+| [docs/dogfood.md](docs/dogfood.md) | Real-repo score snapshots |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the code is structured |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [README.ar.md](README.ar.md) | Arabic summary |
@@ -219,9 +220,17 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [INSTALLATION.md](INSTALLATION.md).
 
 ## Contributing
 
-Contributions are welcome. Keep checks independent, return `CheckResult`, and add focused tests.
+Contributions are welcome — especially **false-positive reports** from real repos, small check improvements, and docs.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+```bash
+git clone https://github.com/3ssiri/RepoPulse.git
+cd RepoPulse
+pip install -e ".[dev]"
+pytest
+ruff check .
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for check guidelines and how to report scoring issues.
 
 ## License
 

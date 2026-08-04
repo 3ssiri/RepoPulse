@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.4 - 2026-08-04
+
+- Deeper **Tests** check: `noxfile.py`, `hatch.toml`, broader pyproject markers; score **13 pass** when tests + framework config exist without a separate command file.
+- CONTRIBUTING / bug template: false-positive reporting guidance.
+- Roadmap community notes; [docs/dogfood.md](docs/dogfood.md) score snapshot.
+
 ## 0.3.3 - 2026-08-04
 
 - `create-issues` skips open GitHub issues with the same exact title (default); use `--no-dedupe` to force create.

@@ -4,11 +4,64 @@ from typing import Literal
 from repopulse.models import CheckResult, FileItem
 from repopulse.utils import parse_json_content
 
-# Small keyword lists — keep documented and content-light (no network).
-JS_TEST_RUNNERS = ("jest", "vitest", "mocha", "ava", "node:test")
-PYTHON_FRAMEWORK_MARKERS = ("pytest", "unittest", "nose2", "nose")
-TEST_DIR_PREFIXES = ("tests/", "test/", "__tests__/")
-FRAMEWORK_CONFIG_NAMES = frozenset({"pytest.ini", "conftest.py", "tox.ini", "setup.cfg", "jest.config.js", "jest.config.ts", "vitest.config.ts", "vitest.config.js"})
+# Content-light heuristics only (file names + pyproject/package.json text). No network.
+
+JS_TEST_RUNNERS = ("jest", "vitest", "mocha", "ava", "node:test", "tap", "jasmine")
+PYTHON_FRAMEWORK_MARKERS = ("pytest", "unittest", "nose2", "nose", "hypothesis")
+TEST_DIR_PREFIXES = ("tests/", "test/", "__tests__/", "spec/", "specs/")
+
+# Presence of these files counts as a documented / runnable test entrypoint signal.
+COMMAND_CONFIG_NAMES = frozenset(
+    {
+        "pytest.ini",
+        "tox.ini",
+        "noxfile.py",
+        "hatch.toml",
+        "setup.cfg",
+        "phpunit.xml",
+        "phpunit.xml.dist",
+        "jest.config.js",
+        "jest.config.ts",
+        "jest.config.mjs",
+        "vitest.config.ts",
+        "vitest.config.js",
+        "vitest.config.mjs",
+        "karma.conf.js",
+        "cypress.config.js",
+        "cypress.config.ts",
+        "playwright.config.ts",
+        "playwright.config.js",
+    }
+)
+
+FRAMEWORK_CONFIG_NAMES = COMMAND_CONFIG_NAMES | frozenset(
+    {
+        "conftest.py",
+        ".coveragerc",
+        "coverage.ini",
+    }
+)
+
+# Substrings in pyproject.toml that imply a test runner / task is wired.
+PYPROJECT_TEST_MARKERS = (
+    "pytest",
+    "[tool.pytest",
+    "tool.pytest",
+    "[tool.tox",
+    "tool.tox",
+    "[tool.nox",
+    "tool.nox",
+    "[tool.hatch",
+    "tool.hatch",
+    "[tool.coverage",
+    "tool.coverage",
+    "[tool.poe",
+    "tool.poe",
+    "taskipy",
+    "invoke",
+    "nose2",
+    "unittest",
+)
 
 
 def _is_test_file(name: str) -> bool:
@@ -21,17 +74,20 @@ def _is_test_file(name: str) -> bool:
 
 def _detect_python_framework(lower_paths: list[str], pyproject_lower: str) -> str | None:
     """Return a known Python test framework name, or None."""
-    has_pytest_config = any(
-        PurePosixPath(path).name in {"pytest.ini", "conftest.py"} for path in lower_paths
-    )
-    has_tox = any(PurePosixPath(path).name == "tox.ini" for path in lower_paths)
+    names = {PurePosixPath(path).name for path in lower_paths}
     if (
         "pytest" in pyproject_lower
-        or "[tool.pytest.ini_options]" in pyproject_lower
-        or has_pytest_config
-        or (has_tox and "pytest" in pyproject_lower)
+        or "[tool.pytest" in pyproject_lower
+        or "pytest.ini" in names
+        or "conftest.py" in names
     ):
         return "pytest"
+    if "noxfile.py" in names or "tool.nox" in pyproject_lower:
+        return "nox"
+    if "tox.ini" in names or "tool.tox" in pyproject_lower:
+        return "tox"
+    if "hatch.toml" in names or "tool.hatch" in pyproject_lower:
+        return "hatch"
     if "unittest" in pyproject_lower or any(
         PurePosixPath(path).name.endswith("_test.py") for path in lower_paths
     ):
@@ -61,6 +117,16 @@ def _has_framework_config_files(lower_paths: list[str]) -> bool:
     return any(PurePosixPath(path).name in FRAMEWORK_CONFIG_NAMES for path in lower_paths)
 
 
+def _has_command_config_files(lower_paths: list[str]) -> bool:
+    return any(PurePosixPath(path).name in COMMAND_CONFIG_NAMES for path in lower_paths)
+
+
+def _pyproject_has_test_command(pyproject_lower: str) -> bool:
+    if not pyproject_lower:
+        return False
+    return any(marker in pyproject_lower for marker in PYPROJECT_TEST_MARKERS)
+
+
 def run_tests_check(
     files: list[FileItem],
     package_json_content: str | None = None,
@@ -77,9 +143,7 @@ def run_tests_check(
 
     pyproject_lower = (pyproject_content or "").lower()
     has_python_test_command = (
-        "pytest" in pyproject_lower
-        or "[tool.pytest.ini_options]" in pyproject_lower
-        or any(PurePosixPath(path).name in {"pytest.ini", "tox.ini"} for path in lower_paths)
+        _pyproject_has_test_command(pyproject_lower) or _has_command_config_files(lower_paths)
     )
     has_test_command = has_node_test_command or has_python_test_command
 
@@ -90,12 +154,14 @@ def run_tests_check(
 
     if (has_test_dir or has_test_file) and has_test_command:
         score = 15
+    elif has_test_dir and has_test_file and has_framework_signal:
+        # Tests exist with clear framework (e.g. conftest/pytest) but no explicit command file.
+        score = 13
     elif has_test_dir and has_test_file:
         score = 12
     elif has_test_dir or has_test_file:
         score = 7
     elif has_framework_signal or has_test_command:
-        # Framework/tooling configured but no test files or dirs yet.
         score = 4
     else:
         score = 0
@@ -106,10 +172,21 @@ def run_tests_check(
         status = "pass"
         message = f"Tests{fw_label} and a test command were detected."
         recommendations: list[str] = []
+    elif score == 13:
+        status = "pass"
+        message = (
+            f"Test directory and files{fw_label} were detected with framework config; "
+            "document a one-line test command if not already obvious."
+        )
+        recommendations = [
+            "Optionally document a root test command (pytest, tox, nox, npm test, or hatch test)."
+        ]
     elif score == 12:
         status = "warn"
         message = f"Test directory and files{fw_label} were detected, but no test command."
-        recommendations = ["Wire a documented test command (for example pytest or npm test)."]
+        recommendations = [
+            "Wire a documented test command (pytest, tox, nox, hatch test, npm test, or similar)."
+        ]
     elif score == 7:
         status = "warn"
         message = f"Some test indicators{fw_label} were detected, but test automation can improve."
