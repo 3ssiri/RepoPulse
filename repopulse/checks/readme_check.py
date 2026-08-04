@@ -4,10 +4,21 @@ from repopulse.models import CheckResult, FileItem
 from repopulse.utils import find_file
 
 README_KEYWORDS = {
-    "installation": ["install", "installation", "setup", "getting started"],
-    "usage": ["usage", "run", "how to use", "example"],
-    "features": ["features", "what it does"],
-    "tech_stack": ["tech stack", "built with", "technologies"],
+    "installation": ["install", "installation", "setup", "getting started", "quickstart", "quick start"],
+    "usage": ["usage", "run", "how to use", "example", "examples", "tutorial", "api reference", "documentation"],
+    "features": ["features", "what it does", "capabilities", "highlights"],
+    # Optional polish — broader phrases so polished READMEs are not nagged unfairly.
+    "tech_stack": [
+        "tech stack",
+        "built with",
+        "technologies",
+        "requirements",
+        "dependencies",
+        "requires python",
+        "requires node",
+        "powered by",
+        "stack:",
+    ],
 }
 
 
@@ -41,10 +52,15 @@ def run_readme_check(files: list[FileItem], content: str | None) -> CheckResult:
         "features": "a feature list",
         "tech_stack": "the tech stack",
     }
+    found_sections: set[str] = set()
     for key, points in scoring.items():
         if any(keyword in lower for keyword in README_KEYWORDS[key]):
             score += points
+            found_sections.add(key)
         else:
+            # Skip tech_stack nag when core docs are already present (low-value noise).
+            if key == "tech_stack" and {"installation", "usage"}.issubset(found_sections):
+                continue
             recommendations.append(f"Document {labels[key]} in the README.")
 
     status: Literal["pass", "warn"] = "pass" if score >= 16 else "warn"

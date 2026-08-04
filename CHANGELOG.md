@@ -4,6 +4,9 @@
 
 - `create-issues` skips open GitHub issues with the same exact title (default); use `--no-dedupe` to force create.
 - Deeper GitHub Actions check: more test/quality/setup tokens, workflow basename hints (`tests.yaml`, `ci.yml`, …), fairer scores for mature CI, gap-specific recommendations.
+- License check accepts root `LICENSE.txt` / `LICENCE*` / `COPYING*` (fixes Flask-style false fails).
+- Sensitive files: fixture paths under `tests/`/`examples/` warn instead of fail; production paths still fail.
+- README: broader usage/stack keywords; skip low-value tech-stack nag when install+usage already present.
 
 ## 0.3.2 - 2026-08-04
 

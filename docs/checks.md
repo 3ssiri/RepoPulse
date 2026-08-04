@@ -32,12 +32,12 @@ Weight `0` keeps the check in the report but zeros its score contribution. Omitt
 | Check | Points | What It Looks For |
 |---|---:|---|
 | README Quality | 20 | README file, clear description, installation, usage, features, and tech stack. |
-| License | 10 | `LICENSE`, `LICENSE.md`, or `COPYING`. |
+| License | 10 | Root license file: `LICENSE`, `LICENSE.md`, `LICENSE.txt`, `LICENCE*`, `COPYING`, etc. |
 | .gitignore | 10 | `.gitignore` plus common patterns such as `.env`, caches, dependencies, and build outputs. |
 | Tests | 15 | Test directories/files, framework signals (pytest, jest, vitest, …), and a test command. |
 | GitHub Actions | 15 | Workflows that run tests and quality tools (lint/format/type-check). |
 | Recent Activity | 10 | Recent `pushed_at` timestamp from GitHub. |
-| Sensitive Files | 10 | Common sensitive file names such as `.env`, `credentials.json`, `private-key.pem`, and `id_rsa`. |
+| Sensitive Files | 10 | Common sensitive names (`.env`, keys, credentials). Under `tests/` / `examples/` → warn (fixtures); at repo root/src → fail. |
 | Project Structure | 5 | Organized source/docs directories and limited root clutter. |
 | Package Scripts | 5 | Node scripts or Python project/tooling configuration. |
 
@@ -52,9 +52,10 @@ Advisory checks currently use `max_score=0`. They do not change the 100-point sc
 
 ## Sensitive File Safety
 
-RepoPulse checks sensitive file names only. It does not print sensitive file contents.
+RepoPulse checks sensitive file **names** only. It does not print sensitive file contents.
 
-If a sensitive file name is detected, the recommendation is to remove the file from the repository history when needed and rotate any exposed credentials.
+- **Production paths** (e.g. root `.env`): fail and recommend removal + credential rotation.
+- **Fixture paths** (`tests/`, `examples/`, `fixtures/`, …): warn with reduced score; recommend confirming values are dummy data.
 
 ## README Quality Scoring
 

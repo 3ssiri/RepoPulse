@@ -60,6 +60,36 @@ def test_sensitive_files_check_never_prints_secret_content():
     assert "SECRET" not in result.message
 
 
+def test_sensitive_files_fixture_env_is_warn_not_fail():
+    files = [item("tests/test_apps/.env"), item("src/app.py")]
+
+    result = run_sensitive_files_check(files)
+
+    assert result.status == "warn"
+    assert result.score == 7
+    assert "tests/test_apps/.env" in result.message
+    assert "fixture" in result.message.lower()
+
+
+def test_license_check_accepts_license_txt():
+    from repopulse.checks.license_check import run_license_check
+
+    files = [item("LICENSE.txt"), item("README.md")]
+    result = run_license_check(files)
+    assert result.status == "pass"
+    assert result.score == 10
+    assert "LICENSE.txt" in result.message
+
+
+def test_license_check_ignores_nested_license_only():
+    from repopulse.checks.license_check import run_license_check
+
+    files = [item("docs/license.rst"), item("examples/app/LICENSE.txt")]
+    result = run_license_check(files)
+    assert result.status == "fail"
+    assert result.score == 0
+
+
 def test_actions_check_reads_workflow_content():
     files = [item(".github/workflows/quality.yml")]
     workflows = {".github/workflows/quality.yml": "jobs:\n  test:\n    steps:\n      - run: pytest\n      - run: ruff check .\n"}
