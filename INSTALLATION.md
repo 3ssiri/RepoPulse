@@ -85,7 +85,7 @@ repopulse --help
 Useful if PyPI is blocked or you want a specific release asset:
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.1/repopulse_cli-0.3.1-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.3/repopulse_cli-0.3.3-py3-none-any.whl
 ```
 
 Browse all releases: https://github.com/3ssiri/RepoPulse/releases
@@ -159,7 +159,7 @@ repopulse scan https://github.com/psf/requests/tree/main
 # Compare two refs
 repopulse compare \
   https://github.com/3ssiri/RepoPulse/tree/main \
-  https://github.com/3ssiri/RepoPulse/releases/tag/v0.3.1 \
+  https://github.com/3ssiri/RepoPulse/releases/tag/v0.3.3 \
   --format summary
 ```
 

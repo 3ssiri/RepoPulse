@@ -75,8 +75,8 @@ From `.github/workflows/release.yml`:
 4. Create and push a tag:
 
 ```bash
-git tag -a v0.3.1 -m "RepoPulse 0.3.1"
-git push origin v0.3.1
+git tag -a v0.3.3 -m "RepoPulse 0.3.3"
+git push origin v0.3.3
 ```
 
 5. The **Release** workflow runs only for `v*` tags:
@@ -90,7 +90,7 @@ git push origin v0.3.1
 6. Install from the GitHub Release (always works after a successful tag release):
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.1/repopulse_cli-0.3.1-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.3/repopulse_cli-0.3.3-py3-none-any.whl
 ```
 
 ### First / next PyPI publish
@@ -117,7 +117,7 @@ python -c "import repopulse; print(repopulse.__version__)"
 pip index versions repopulse-cli
 ```
 
-Expect the version you just tagged (e.g. `0.3.1`). If `pip install repopulse` installs something else, you hit the name collision — use `repopulse-cli`.
+Expect the version you just tagged (e.g. `0.3.3`). If `pip install repopulse` installs something else, you hit the name collision — use `repopulse-cli`.
 
 ---
 

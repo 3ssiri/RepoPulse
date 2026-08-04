@@ -38,7 +38,7 @@ Weight `0` keeps the check in the report but zeros its score contribution. Omitt
 | GitHub Actions | 15 | Workflows that run tests and quality tools (lint/format/type-check). |
 | Recent Activity | 10 | Recent `pushed_at` timestamp from GitHub. |
 | Sensitive Files | 10 | Common sensitive names (`.env`, keys, credentials). Under `tests/` / `examples/` → warn (fixtures); at repo root/src → fail. |
-| Project Structure | 5 | Organized source/docs directories and limited root clutter. |
+| Project Structure | 5 | Package or `src/` layout; common OSS root docs ignored as clutter; no committed build artifacts. |
 | Package Scripts | 5 | Node scripts or Python project/tooling configuration. |
 
 ## Advisory Checks

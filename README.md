@@ -45,7 +45,7 @@ pip install repopulse-cli
 From a GitHub Release wheel (if you prefer not to use PyPI):
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.1/repopulse_cli-0.3.1-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.3/repopulse_cli-0.3.3-py3-none-any.whl
 ```
 
 Full install notes: [INSTALLATION.md](INSTALLATION.md).

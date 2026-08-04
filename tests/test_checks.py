@@ -90,6 +90,26 @@ def test_license_check_ignores_nested_license_only():
     assert result.score == 0
 
 
+def test_structure_check_python_package_with_docs_passes():
+    from repopulse.checks.structure_check import run_structure_check
+
+    files = [
+        item("repopulse/cli.py"),
+        item("repopulse/checks/license_check.py"),
+        item("README.md"),
+        item("CHANGELOG.md"),
+        item("CONTRIBUTING.md"),
+        item("LICENSE"),
+        item("pyproject.toml"),
+        item("USAGE.md"),
+        item("INSTALLATION.md"),
+        item("ARCHITECTURE.md"),
+    ]
+    result = run_structure_check(files)
+    assert result.score >= 4
+    assert result.status == "pass"
+
+
 def test_actions_check_reads_workflow_content():
     files = [item(".github/workflows/quality.yml")]
     workflows = {".github/workflows/quality.yml": "jobs:\n  test:\n    steps:\n      - run: pytest\n      - run: ruff check .\n"}
