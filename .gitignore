@@ -18,3 +18,8 @@ htmlcov/
 dist-pypi/
 .cursor/
 
+
+# Private grant notes (local only)
+docs/openai-codex-oss-fund-ar.md
+docs/*.local
+
