@@ -5,6 +5,13 @@ from rich.table import Table
 
 from repopulse.models import ComparisonReport, HealthReport
 
+# Shown in human-readable reports so scores are not treated as absolute judgments.
+SCOPE_NOTE = (
+    "Content-light heuristics aimed at common Python and JavaScript/TypeScript open-source "
+    "layouts. Other ecosystems and large monorepos may score lower even when healthy — treat "
+    "gaps as prompts, not absolute judgments."
+)
+
 
 def _score_percent(report: HealthReport) -> int:
     if report.max_score <= 0:
@@ -43,6 +50,9 @@ def render_markdown(report: HealthReport) -> str:
         "| Pass | Warn | Fail |",
         "|---:|---:|---:|",
         f"| {len(passed)} | {len(warned)} | {len(failed)} |",
+        "",
+        "## Scope",
+        SCOPE_NOTE,
         "",
         "## Checks",
         "| Check | Status | Score | Notes |",
@@ -103,6 +113,7 @@ def render_json(report: HealthReport) -> str:
 def render_summary(report: HealthReport) -> str:
     lines = [
         f"{report.repository.full_name}: {report.total_score} / {report.max_score} - {report.grade}",
+        f"Scope: {SCOPE_NOTE}",
     ]
     if report.recommendations:
         lines.append("Top recommendations:")
@@ -179,6 +190,7 @@ def render_terminal(report: HealthReport, console: Console | None = None, verbos
         f"Default branch: {repo.default_branch} | Stars: {repo.stars} | "
         f"Forks: {repo.forks} | Open issues: {repo.open_issues}"
     )
+    target.print(f"[dim]Scope: {SCOPE_NOTE}[/dim]")
 
     table = Table(title="Checks")
     table.add_column("Check")

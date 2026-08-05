@@ -8,6 +8,17 @@ repopulse compare <baseline> <target>
 repopulse create-issues <github_repo_url_or_local_path>
 ```
 
+## Scope
+
+RepoPulse scores **repository hygiene** with content-light checks (names + a few files). It is strongest on common **Python** and **JavaScript/TypeScript** open-source projects.
+
+| Treat scores as… | Not as… |
+|---|---|
+| Prompts for missing README, license, tests, CI, secrets-by-name | A full security audit or language-agnostic quality rank |
+| CI gates you tune with profiles / `fail_under` | A guarantee that a Go/Rust/Java monorepo “is worse” |
+
+Human-readable outputs (table, summary, markdown) include a short scope note. JSON omits free-text scope on purpose — see [docs/json-schema.md](docs/json-schema.md).
+
 ## Basic Scan
 
 ```bash

@@ -35,3 +35,4 @@ RepoPulse is an early-stage maintainer tool. The roadmap focuses on making repos
 
 - Ecosystem-specific plugins or optional deeper parsers (e.g. full Makefile targets).
 - Dedupe create-issues by label + check key as well as title.
+- GitHub API rate-limit wait/retry only if production scans hit quota pain (errors are already clear).

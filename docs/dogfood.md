@@ -19,8 +19,8 @@ Informal scans of public repositories to catch false positives. Scores are appro
 ## Themes
 
 - **Python libraries** with standard layout score high after license/Actions/fixture fixes.
-- **Go / other ecosystems** score lower: heuristics are still Python/JS-weighted (expected).
-- Residual nags: package scripts, Dependabot style, “document test command” when CI is non-keyword, structure for monorepos.
+- **Go / other ecosystems** score lower: heuristics are still Python/JS-weighted (expected; see scope notes in reports).
+- Residual risks after 0.3.x trust pass: unusual CI without runner tokens; monorepos with nonstandard roots still may warn on structure.
 
 ## How to re-run
 

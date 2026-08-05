@@ -9,6 +9,20 @@ RepoPulse JSON output (`--format json` / `--json`) is intended for automation.
 - Additive fields may appear without a version bump.
 - Removing or renaming fields, or changing meaning of existing fields, requires a new `schema_version`.
 
+## Scoring and release rules (do not break CI quietly)
+
+Automation often pins `--fail-under` and compares `total_score` / per-check scores. Maintainers and contributors **must**:
+
+| Change | Required action |
+|---|---|
+| Add optional JSON fields | Allowed on same `schema_version`; document in this file + CHANGELOG. |
+| Remove/rename JSON fields or change field meaning | Bump `schema_version` (e.g. `1.0` → `1.1` or `2.0`), update this doc, CHANGELOG, and tests. |
+| Change default check **weights** or max points of a scored check | Document under CHANGELOG (Unreleased → version); note impact for `--fail-under` users. Prefer profile defaults over silent global shifts. |
+| Soften/harden a check’s **status thresholds** (pass/warn/fail) in a way that moves typical OSS scores by more than a few points | Document in CHANGELOG; re-run [dogfood](dogfood.md) snapshot when practical. |
+| Pure false-positive fixes that only remove unfair nags without changing max points | Document briefly in CHANGELOG; no schema bump. |
+
+**Do not** ship a release that breaks the JSON contract or moves the default 100-point scale without an entry in `CHANGELOG.md`.
+
 ## Top-level fields (`schema_version` 1.0)
 
 | Field | Type | Description |

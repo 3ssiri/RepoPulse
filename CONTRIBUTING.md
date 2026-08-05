@@ -78,6 +78,15 @@ docs/
 - Do not print or return secret file contents (names only for sensitive files).
 - Prefer clear, gap-specific recommendations over vague warnings.
 - Prefer **warn** over **fail** for fixture/example paths and keyword misses on mature OSS.
+- Heuristics are strongest for **Python** and **JS/TS**; do not pretend full multi-language coverage.
+
+## Release / contract rules
+
+See [docs/json-schema.md](docs/json-schema.md#scoring-and-release-rules-do-not-break-ci-quietly):
+
+- No silent breaks of JSON fields (`schema_version` bump required).
+- No silent large shifts of default scoring without `CHANGELOG.md`.
+- Prefer reducing false positives over adding noisy recommendations.
 - Keep score weights aligned with README and docs.
 
 ## Reporting false positives

@@ -34,6 +34,14 @@ console = Console()
 OUTPUT_FORMATS = {"table", "markdown", "json", "summary", "issues"}
 COMPARE_FORMATS = {"table", "markdown", "json", "summary"}
 
+# Formats that must not be interpreted as Rich markup (brackets in JSON/Markdown).
+_PLAIN_OUTPUT_FORMATS = frozenset({"json", "markdown", "issues", "summary"})
+
+
+def _print_plain(text: str) -> None:
+    """Print user/report text without Rich markup or syntax highlighting."""
+    console.print(text, markup=False, highlight=False)
+
 
 @app.callback()
 def main():
@@ -127,9 +135,11 @@ def scan(
                 console.print(f"[green]Report written to:[/green] {output}")
         elif selected_format == "table":
             if quiet:
-                console.print(render_summary(report))
+                _print_plain(render_summary(report))
             else:
                 render_terminal(report, console, verbose=verbose)
+        elif selected_format in _PLAIN_OUTPUT_FORMATS:
+            _print_plain(rendered)
         else:
             console.print(rendered)
         threshold = fail_under if fail_under is not None else scan_config.fail_under
@@ -221,9 +231,11 @@ def compare_cmd(
                 console.print(f"[green]Comparison written to:[/green] {output}")
         elif selected_format == "table":
             if quiet:
-                console.print(render_comparison_summary(comparison))
+                _print_plain(render_comparison_summary(comparison))
             else:
                 render_comparison_terminal(comparison, console)
+        elif selected_format in _PLAIN_OUTPUT_FORMATS:
+            _print_plain(rendered)
         else:
             console.print(rendered)
 
@@ -367,9 +379,10 @@ def create_issues_cmd(
         if dry_run:
             for index, payload in enumerate(payloads, start=1):
                 console.print(f"[bold]--- Issue {index}/{len(payloads)} ---[/bold]")
-                console.print(f"[cyan]Title:[/cyan] {payload['title']}")
-                console.print(f"[cyan]Labels:[/cyan] {', '.join(payload['labels'])}")
-                console.print(payload["body"])
+                # Plain text: titles contain [brackets]; Rich markup/highlight must not touch them.
+                _print_plain(f"Title: {payload['title']}")
+                _print_plain(f"Labels: {', '.join(payload['labels'])}")
+                _print_plain(str(payload["body"]))
                 console.print()
             if not quiet:
                 extra = f" ({len(skipped)} skipped as already open)" if skipped else ""
@@ -394,10 +407,10 @@ def create_issues_cmd(
                 if html_url:
                     created_urls.append(html_url)
                 if not quiet:
-                    console.print(
-                        f"[green]Created:[/green] {payload['title']}"
-                        + (f" → {html_url}" if html_url else "")
+                    created_line = f"Created: {payload['title']}" + (
+                        f" → {html_url}" if html_url else ""
                     )
+                    _print_plain(created_line)
         except GitHubAPIError:
             if created_urls and not quiet:
                 console.print(

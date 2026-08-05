@@ -50,7 +50,7 @@ pip install repopulse-cli
 من عجلة إصدار GitHub (إن فضّلت عدم استخدام الفهرس):
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.4/repopulse_cli-0.3.4-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.5/repopulse_cli-0.3.5-py3-none-any.whl
 ```
 
 التفاصيل الكاملة: [INSTALLATION.md](INSTALLATION.md) (بالإنجليزية).

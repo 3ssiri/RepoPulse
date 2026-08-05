@@ -4,6 +4,17 @@ RepoPulse produces a 100-point score from core checks and adds advisory recommen
 
 The default score is 100 points. Projects can customize scored check weights or disable checks with `.repopulse.yml`.
 
+## Scope of heuristics
+
+| Stronger today | Weaker / advisory |
+|---|---|
+| Python package layouts (`pyproject.toml`, pytest, tox/nox/hatch) | Ecosystems without our markers (scores can look “low” unfairly) |
+| JS/TS (`package.json` scripts, jest/vitest) | Custom CI without common runner tokens |
+| Multi-package roots (`packages/`, `apps/`, pnpm/nx/turbo workspaces) | Very unusual monorepo layouts |
+| File-name sensitive-file detection | Full secret scanning (out of scope) |
+
+Checks stay **content-light** on purpose: deterministic, offline-friendly, no network inside check modules.
+
 ## Profiles
 
 Named profiles apply ready-made `weights`, optional `disabled_checks`, and `fail_under` in `.repopulse.yml`:
@@ -34,12 +45,12 @@ Weight `0` keeps the check in the report but zeros its score contribution. Omitt
 | README Quality | 20 | README file, clear description, installation, usage, features, and tech stack. |
 | License | 10 | Root license file: `LICENSE`, `LICENSE.md`, `LICENSE.txt`, `LICENCE*`, `COPYING`, etc. |
 | .gitignore | 10 | `.gitignore` plus common patterns such as `.env`, caches, dependencies, and build outputs. |
-| Tests | 15 | Test directories/files, framework signals (pytest, jest, vitest, …), and a test command. |
+| Tests | 15 | Test directories/files, framework signals (pytest, jest, vitest, …), a package/pyproject test command, **or** a CI workflow that runs a known test step. |
 | GitHub Actions | 15 | Workflows that run tests and quality tools (lint/format/type-check). |
 | Recent Activity | 10 | Recent `pushed_at` timestamp from GitHub. |
 | Sensitive Files | 10 | Common sensitive names (`.env`, keys, credentials). Under `tests/` / `examples/` → warn (fixtures); at repo root/src → fail. |
-| Project Structure | 5 | Package or `src/` layout; common OSS root docs ignored as clutter; no committed build artifacts. |
-| Package Scripts | 5 | Node scripts or Python project/tooling configuration. |
+| Project Structure | 5 | Package/`src`/`packages`/`apps` layout; monorepo roots get a higher clutter allowance; common OSS root docs ignored; no committed build artifacts. |
+| Package Scripts | 5 | Node scripts, Python tooling/task sections, or project metadata (`pyproject` / `package.json` / requirements). Metadata alone can pass softly. |
 
 ## Advisory Checks
 
@@ -47,7 +58,7 @@ Advisory checks currently use `max_score=0`. They do not change the 100-point sc
 
 | Check | What It Looks For |
 |---|---|
-| Dependencies | Dependency manifest, lockfile, and Dependabot configuration. |
+| Dependencies | Manifest, lockfile, and optional Dependabot/**Renovate**. Lockfile alone is a pass with an optional update-bot tip. |
 | Security Baseline | `SECURITY.md`, Dependabot, CodeQL and other scanners (Trivy, Semgrep, gitleaks, …). Per-gap recommendations. |
 
 ## Sensitive File Safety

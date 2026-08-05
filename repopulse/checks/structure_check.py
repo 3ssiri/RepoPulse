@@ -5,10 +5,47 @@ from repopulse.models import CheckResult, FileItem
 STRUCTURE_PREFIXES = (
     "src/",
     "app/",
+    "apps/",
     "lib/",
     "components/",
     "docs/",
     "packages/",
+    "services/",
+    "crates/",
+    "modules/",
+    "workspaces/",
+    "backend/",
+    "frontend/",
+    "internal/",
+    "cmd/",
+    "pkg/",
+)
+
+# Root markers that imply a monorepo / multi-package layout.
+MONOREPO_ROOT_NAMES = frozenset(
+    {
+        "pnpm-workspace.yaml",
+        "pnpm-workspace.yml",
+        "lerna.json",
+        "nx.json",
+        "turbo.json",
+        "go.work",
+        "go.work.sum",
+        "cargo.toml",  # often a workspace root
+        "rush.json",
+        "workspace.json",
+        "moon.yml",
+        "moon.yaml",
+    }
+)
+
+MONOREPO_PATH_PREFIXES = (
+    "packages/",
+    "apps/",
+    "services/",
+    "crates/",
+    "modules/",
+    "workspaces/",
 )
 
 # Top-level dirs that are not "source layout" by themselves.
@@ -82,16 +119,24 @@ KNOWN_ROOT_FILES = {
     "notice",
     "notice.md",
     "makefile",
+    "gnumakefile",
+    "justfile",
+    "taskfile.yml",
+    "taskfile.yaml",
     "dockerfile",
     "docker-compose.yml",
     "docker-compose.yaml",
+    "compose.yml",
+    "compose.yaml",
     "pyproject.toml",
     "setup.py",
     "setup.cfg",
     "tox.ini",
     "noxfile.py",
+    "hatch.toml",
     "poetry.lock",
     "uv.lock",
+    "pdm.lock",
     "requirements.txt",
     "requirements-dev.txt",
     "requirements.lock",
@@ -99,10 +144,20 @@ KNOWN_ROOT_FILES = {
     "package-lock.json",
     "pnpm-lock.yaml",
     "yarn.lock",
+    "pnpm-workspace.yaml",
+    "pnpm-workspace.yml",
+    "lerna.json",
+    "nx.json",
+    "turbo.json",
+    "rush.json",
     "cargo.toml",
+    "cargo.lock",
     "go.mod",
     "go.sum",
+    "go.work",
+    "go.work.sum",
     "gemfile",
+    "gemfile.lock",
     "rakefile",
     "cmakelists.txt",
     "manifest.in",
@@ -112,11 +167,28 @@ KNOWN_ROOT_FILES = {
     ".pre-commit-config.yaml",
     ".readthedocs.yaml",
     ".coveragerc",
+    ".npmrc",
+    ".nvmrc",
+    ".node-version",
+    ".python-version",
+    ".tool-versions",
+    ".ruby-version",
+    ".env.example",
+    "renovate.json",
+    "renovate.json5",
+    ".renovaterc",
+    ".renovaterc.json",
     "agents.md",
     "architecture.md",
     "installation.md",
     "usage.md",
     "requirements.md",
+    "codeowners",
+    "owners",
+    "citation.cff",
+    "codecov.yml",
+    "codecov.yaml",
+    ".codecov.yml",
 }
 
 
@@ -137,6 +209,12 @@ def _has_source_layout(paths: list[str]) -> bool:
     return False
 
 
+def _is_monorepo(paths: list[str], root_names: set[str]) -> bool:
+    if any(name in MONOREPO_ROOT_NAMES for name in root_names):
+        return True
+    return any(path.startswith(MONOREPO_PATH_PREFIXES) for path in paths)
+
+
 def _root_clutter_count(paths: list[str]) -> int:
     root_files = [path for path in paths if "/" not in path]
     clutter = 0
@@ -154,28 +232,38 @@ def _root_clutter_count(paths: list[str]) -> int:
 
 def run_structure_check(files: list[FileItem]) -> CheckResult:
     paths = [file.path.lower() for file in files]
+    root_names = {PurePosixPath(path).name.lower() for path in paths if "/" not in path}
     has_structure = _has_source_layout(paths)
     has_artifacts = any(path.startswith(BUILD_ARTIFACTS) for path in paths)
     clutter = _root_clutter_count(paths)
+    monorepo = _is_monorepo(paths, root_names)
 
-    if has_structure and clutter <= 12 and not has_artifacts:
+    # Monorepos legitimately carry more root config (workspaces, tooling).
+    clutter_pass = 20 if monorepo else 12
+    clutter_soft = 28 if monorepo else 20
+    clutter_ok = 22 if monorepo else 15
+
+    if has_structure and clutter <= clutter_pass and not has_artifacts:
         score = 5
-    elif has_structure and clutter <= 20 and not has_artifacts:
+    elif has_structure and clutter <= clutter_soft and not has_artifacts:
         score = 4
-    elif has_structure or clutter <= 15:
+    elif has_structure or clutter <= clutter_ok:
         score = 3
     else:
         score = 1
 
     if score >= 4:
         status = "pass"
-        message = "Project structure looks organized."
+        if monorepo:
+            message = "Monorepo / multi-package structure looks organized."
+        else:
+            message = "Project structure looks organized."
         recommendations: list[str] = []
     else:
         status = "warn"
         message = "Project structure could be clearer."
         recommendations = [
-            "Group source code into a package or src/ layout and keep build artifacts out of git."
+            "Group source code into a package, src/, packages/, or apps/ layout and keep build artifacts out of git."
         ]
         if has_artifacts:
             recommendations.append("Avoid committing build outputs (dist/, build/, coverage/).")

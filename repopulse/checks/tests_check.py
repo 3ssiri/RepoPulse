@@ -127,10 +127,50 @@ def _pyproject_has_test_command(pyproject_lower: str) -> bool:
     return any(marker in pyproject_lower for marker in PYPROJECT_TEST_MARKERS)
 
 
+# Light CI tokens: if workflows run tests, treat as a documented test entrypoint.
+CI_TEST_TOKENS = (
+    "pytest",
+    "python -m pytest",
+    "py.test",
+    "npm test",
+    "npm run test",
+    "pnpm test",
+    "yarn test",
+    "vitest",
+    "jest",
+    "mocha",
+    "cargo test",
+    "go test",
+    "unittest",
+    "python -m unittest",
+    "tox",
+    "nox",
+    "hatch test",
+    "uv run pytest",
+    "coverage run",
+    "make test",
+    "ctest",
+    "phpunit",
+    "rspec",
+    "dotnet test",
+    "mvn test",
+    "gradle test",
+)
+
+
+def _ci_has_test_command(workflow_contents: dict[str, str] | None) -> bool:
+    """True when loaded workflow text includes a common test runner token."""
+    if not workflow_contents:
+        return False
+    signal = " ".join(workflow_contents.values()).lower()
+    return any(token in signal for token in CI_TEST_TOKENS)
+
+
 def run_tests_check(
     files: list[FileItem],
     package_json_content: str | None = None,
     pyproject_content: str | None = None,
+    workflow_contents: dict[str, str] | None = None,
 ) -> CheckResult:
     paths = [file.path for file in files if file.type == "blob"]
     lower_paths = [path.lower() for path in paths]
@@ -145,7 +185,8 @@ def run_tests_check(
     has_python_test_command = (
         _pyproject_has_test_command(pyproject_lower) or _has_command_config_files(lower_paths)
     )
-    has_test_command = has_node_test_command or has_python_test_command
+    has_ci_test_command = _ci_has_test_command(workflow_contents)
+    has_test_command = has_node_test_command or has_python_test_command or has_ci_test_command
 
     python_fw = _detect_python_framework(lower_paths, pyproject_lower)
     js_fw = _detect_js_framework(package, scripts)
@@ -170,22 +211,23 @@ def run_tests_check(
     fw_label = f" ({framework})" if framework else ""
     if score == 15:
         status = "pass"
-        message = f"Tests{fw_label} and a test command were detected."
+        if has_ci_test_command and not (has_node_test_command or has_python_test_command):
+            message = f"Tests{fw_label} detected; CI runs a test step."
+        else:
+            message = f"Tests{fw_label} and a test command were detected."
         recommendations: list[str] = []
     elif score == 13:
         status = "pass"
         message = (
-            f"Test directory and files{fw_label} were detected with framework config; "
-            "document a one-line test command if not already obvious."
+            f"Test directory and files{fw_label} were detected with framework config."
         )
-        recommendations = [
-            "Optionally document a root test command (pytest, tox, nox, npm test, or hatch test)."
-        ]
+        # Soft optional tip only — do not push users who already have tests + framework.
+        recommendations = []
     elif score == 12:
         status = "warn"
         message = f"Test directory and files{fw_label} were detected, but no test command."
         recommendations = [
-            "Wire a documented test command (pytest, tox, nox, hatch test, npm test, or similar)."
+            "Wire a documented test command (pytest, tox, nox, hatch test, npm test, or a CI test step)."
         ]
     elif score == 7:
         status = "warn"
@@ -209,3 +251,4 @@ def run_tests_check(
         message=message,
         recommendations=recommendations,
     )
+

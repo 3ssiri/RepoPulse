@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+## 0.3.5 - 2026-08-06
+
+### Trust / heuristics
+
+- **Structure:** monorepo-aware layouts (`apps/`, `packages/`, `services/`, …), higher root-clutter allowance, more known workspace/tooling root files.
+- **Package scripts:** soft pass on project metadata alone; recognize task entrypoints (Makefile, tox/nox/hatch, `[project.scripts]`, …).
+- **Tests:** CI workflow test steps count as a documented test command; score-13 framework path no longer nags for an extra root command.
+- **Dependencies (advisory):** lockfile alone passes; Renovate accepted; dual “must have Dependabot + lockfile” nag removed.
+- **Scope:** human reports (table/summary/markdown) state Python/JS-weighted content-light scope; docs updated (`README`, `USAGE`, `docs/checks.md`).
+- **Release rules:** scoring/JSON stability documented in `docs/json-schema.md` and `CONTRIBUTING.md` (no silent contract or scale breaks).
+
+### CLI reliability
+
+- Plain formats (`json` / `markdown` / `summary` / `issues`) print without Rich markup/highlight so brackets and JSON stay intact.
+- `create-issues` dry-run/created titles print as plain text so titles like `[RepoPulse] …` stay intact.
+
+### Notes
+
+- GitHub API rate-limit retries remain deferred (clear quota errors already).
+- JSON `schema_version` stays **`1.0`** (additive docs only; no field removals).
+
 ## 0.3.4 - 2026-08-04
 
 - Deeper **Tests** check: `noxfile.py`, `hatch.toml`, broader pyproject markers; score **13 pass** when tests + framework config exist without a separate command file.

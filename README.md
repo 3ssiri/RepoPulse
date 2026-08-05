@@ -15,6 +15,13 @@ RepoPulse is a Python CLI that scans GitHub repositories (or a local folder) and
 
 It is built for developers who want a quick quality review from the terminal, and for maintainers who want a small tool in CI, release prep, or issue triage.
 
+### Scope (read this)
+
+- Heuristics are **content-light** (file names + a few key file bodies). Not a full linter or secret scanner.
+- Best signal today: **Python** and **JavaScript/TypeScript** open-source layouts.
+- Other ecosystems and large monorepos may score lower even when healthy — treat the score as a **prompt**, not a verdict.
+- Details: [docs/checks.md](docs/checks.md), [docs/dogfood.md](docs/dogfood.md).
+
 | | Name |
 |---|---|
 | **Install from PyPI** | `repopulse-cli` |
@@ -50,7 +57,7 @@ pip install repopulse-cli
 From a GitHub Release wheel (if you prefer not to use PyPI):
 
 ```bash
-pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.4/repopulse_cli-0.3.4-py3-none-any.whl
+pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.5/repopulse_cli-0.3.5-py3-none-any.whl
 ```
 
 Full install notes: [INSTALLATION.md](INSTALLATION.md).

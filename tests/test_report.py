@@ -40,6 +40,9 @@ def test_render_markdown_contains_score_and_recommendations():
     assert "Add a LICENSE file." in markdown
     assert "## Attention needed" in markdown
     assert "schema `1.0`" in markdown
+    assert "## Scope" in markdown
+    assert "Python" in markdown
+    assert "JavaScript" in markdown
 
 
 def test_render_json_is_pretty_json():
@@ -89,6 +92,7 @@ def test_render_summary_highlights_top_recommendations():
     summary = render_summary(report)
 
     assert "70 / 100 - Fair" in summary
+    assert "Scope:" in summary
     assert "Add CI." in summary
     assert "Add lockfile." not in summary
 

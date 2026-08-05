@@ -190,10 +190,11 @@ def test_tests_check_conftest_signals_pytest_framework():
 
     result = run_tests_check(files)
 
-    # Dir + files + conftest → 13 pass (framework present; optional command rec).
+    # Dir + files + conftest → 13 pass (framework present; no mandatory command nag).
     assert result.score == 13
     assert result.status == "pass"
     assert "pytest" in result.message.lower()
+    assert result.recommendations == []
 
 
 def test_tests_check_noxfile_counts_as_command():
@@ -351,6 +352,91 @@ def test_dependencies_check_rewards_lockfile_and_dependabot():
 
     assert result.status == "pass"
     assert "lockfile" in result.message.lower()
+    assert result.recommendations == []
+
+
+def test_dependencies_check_lockfile_alone_passes():
+    files = [item("pyproject.toml"), item("uv.lock")]
+
+    result = run_dependencies_check(files)
+
+    assert result.status == "pass"
+    assert "lockfile" in result.message.lower()
+    assert any("Dependabot" in r or "Renovate" in r for r in result.recommendations)
+
+
+def test_dependencies_check_accepts_renovate():
+    files = [
+        item("package.json"),
+        item("package-lock.json"),
+        item("renovate.json"),
+    ]
+
+    result = run_dependencies_check(files)
+
+    assert result.status == "pass"
+    assert result.recommendations == []
+
+
+def test_package_check_soft_pass_on_pyproject_metadata_only():
+    files = [item("pyproject.toml")]
+    content = """
+    [project]
+    name = "demo"
+    version = "0.1.0"
+    """
+
+    result = run_package_check(files, pyproject_content=content)
+
+    assert result.status == "pass"
+    assert result.score == 4
+    assert result.recommendations == []
+
+
+def test_package_check_makefile_counts_as_commands():
+    files = [item("pyproject.toml"), item("Makefile")]
+
+    result = run_package_check(files, pyproject_content="[project]\nname = 'demo'\n")
+
+    assert result.status == "pass"
+    assert result.score == 5
+
+
+def test_structure_check_monorepo_packages_layout_passes():
+    from repopulse.checks.structure_check import run_structure_check
+
+    files = [
+        item("packages/api/src/main.py"),
+        item("packages/web/src/index.ts"),
+        item("pnpm-workspace.yaml"),
+        item("package.json"),
+        item("turbo.json"),
+        item("README.md"),
+        item("LICENSE"),
+        item("nx.json"),
+        item(".npmrc"),
+        item(".nvmrc"),
+        item("renovate.json"),
+    ]
+
+    result = run_structure_check(files)
+
+    assert result.status == "pass"
+    assert result.score >= 4
+    assert "monorepo" in result.message.lower() or "organized" in result.message.lower()
+
+
+def test_tests_check_ci_workflow_counts_as_test_command():
+    files = [item("tests/test_app.py")]
+    workflows = {
+        ".github/workflows/ci.yml": "jobs:\n  test:\n    steps:\n      - run: go test ./...\n"
+    }
+
+    result = run_tests_check(files, workflow_contents=workflows)
+
+    assert result.score == 15
+    assert result.status == "pass"
+    assert "ci" in result.message.lower()
 
 
 def test_security_check_detects_security_policy_and_codeql():
