@@ -5,7 +5,9 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      # Full version tags only (v0.3.6). The floating action tag (v1) must NOT
+      # trigger a package release - it moves on every action update.
+      - "v[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
 
 # Default to read-only; only the job that creates the GitHub Release gets write.
