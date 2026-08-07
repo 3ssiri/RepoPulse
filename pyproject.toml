@@ -32,7 +32,6 @@ dependencies = [
     "requests>=2.34.2",
     "rich>=15.0.0",
     "pydantic>=2.13.4",
-    "python-dotenv>=1.2.2",
     "PyYAML>=6.0.3"
 ]
 

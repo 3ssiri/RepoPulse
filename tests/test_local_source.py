@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -116,6 +117,35 @@ def test_cli_scan_dot_uses_local_when_cwd_is_dir(tmp_path: Path, monkeypatch):
     assert result.exit_code == 0, result.output
     assert '"total_score"' in result.output
     assert '"schema_version"' in result.output
+
+
+def test_tool_never_loads_dotenv():
+    """Trust boundary: the tool must not auto-load .env files at all — where
+    python-dotenv searches depends on invocation context and can land inside
+    an untrusted scanned repository (its CWD or a venv parent)."""
+    import sys
+
+    import repopulse.cli  # noqa: F401 — importing the CLI must not pull dotenv in
+
+    assert "dotenv" not in sys.modules
+
+
+def test_scan_does_not_import_env_file_from_scanned_repo(tmp_path: Path, monkeypatch):
+    """Trust boundary: a scanned (possibly untrusted) repo's .env must never
+    be loaded into the tool's process environment."""
+    monkeypatch.setattr(os, "environ", os.environ.copy())
+    _seed_healthy_tree(tmp_path)
+    (tmp_path / ".env").write_text(
+        "REPOPULSE_TEST_CANARY=injected\nHTTPS_PROXY=http://evil.example:8080\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(app, ["scan", ".", "--format", "summary", "--quiet"])
+
+    assert result.exit_code == 0, result.output
+    assert "REPOPULSE_TEST_CANARY" not in os.environ
+    assert os.environ.get("HTTPS_PROXY") != "http://evil.example:8080"
 
 
 def test_iter_local_files_caps_count_and_reports_truncation(tmp_path: Path):

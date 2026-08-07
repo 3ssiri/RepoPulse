@@ -6,7 +6,6 @@ from rich.console import Console
 
 from repopulse.analyzer import build_health_report, build_local_health_report
 from repopulse.compare import build_comparison, has_regression
-from repopulse.config import load_environment
 from repopulse.github_client import GitHubAPIError, GitHubClient
 from repopulse.issue_export import (
     filter_payloads_against_open_titles,
@@ -109,7 +108,6 @@ def scan(
     verbose: bool = typer.Option(False, "--verbose", help="Show all recommendations in table output."),
 ):
     """Scan a GitHub repository or local directory and generate a health report."""
-    load_environment()
     try:
         selected_format = "json" if json_output else output_format.lower()
         if selected_format not in OUTPUT_FORMATS:
@@ -194,7 +192,6 @@ def compare_cmd(
     ),
 ):
     """Compare two scans (e.g. main vs feature via /tree/ refs, or two local checkouts)."""
-    load_environment()
     try:
         selected_format = "json" if json_output else output_format.lower()
         if selected_format not in COMPARE_FORMATS:
@@ -306,7 +303,6 @@ def create_issues_cmd(
 
     By default, skips titles that already match an open GitHub issue (exact title match).
     """
-    load_environment()
     try:
         if dry_run and yes:
             raise ValueError("Use either --dry-run or --yes, not both.")

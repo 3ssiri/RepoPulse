@@ -19,7 +19,6 @@ RepoPulse uses:
 | `requests` | GitHub API requests. |
 | `rich` | Terminal tables and formatting. |
 | `pydantic` | Data models and validation. |
-| `python-dotenv` | Loading `GITHUB_TOKEN` from `.env`. |
 
 These are declared in [pyproject.toml](pyproject.toml).
 
@@ -58,3 +57,5 @@ Token scopes (minimum practical):
 | `create-issues --yes` | Permission to create issues on the target repository |
 
 Never commit tokens. Prefer env vars / CI secrets. See [USAGE.md](USAGE.md#token-hygiene-important).
+
+`.env` files are **not** loaded automatically: RepoPulse scans repositories that may be untrusted, so it never imports environment files from disk. Pass `--token` or export `GITHUB_TOKEN` in your shell/CI environment.
