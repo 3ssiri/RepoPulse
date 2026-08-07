@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### CI / supply chain
+
+- All GitHub Actions are pinned to full commit SHAs (with `# vX` comments for readability; Dependabot keeps them updated). Full-length SHAs are the only immutable action reference.
+- Release workflow default permission narrowed to `contents: read`; only the job that creates the GitHub Release keeps `contents: write`.
+
 ### Trust / accuracy
 
 - **Truncated scans are now visible.** Large repositories no longer get a complete-looking score silently: the local max-files cap and the GitHub tree API `truncated` flag now surface as a new additive JSON field `scan_truncated` plus an explicit warning in table, summary, and markdown output.

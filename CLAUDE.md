@@ -68,7 +68,7 @@ Accepted findings, not yet fixed — good candidates for next work:
 1. ~~Silent scan truncation~~ — fixed: `HealthReport.scan_truncated` now carries the local max-files cap and the GitHub tree API `truncated` flag, with explicit warnings in table/summary/markdown output.
 2. ~~Local scans claiming `private=False`~~ — fixed: `repository.private` is `bool | None`; local scans report `null`/"Unknown" (`schema_version` bumped to `1.1`).
 3. ~~Auto-loading `.env`~~ — fixed: `python-dotenv` removed entirely; the token comes only from `--token` or the process environment. Do not reintroduce automatic env-file loading.
-4. `.github/workflows/*` — actions are pinned by tag (`@v7`, `@v3`…), not full commit SHA; GitHub recommends full-length SHA pinning. `release.yml` grants `contents: write` at workflow level — scope it to the job that needs it.
+4. ~~Tag-pinned actions / broad release permissions~~ — fixed: all actions pinned to full commit SHAs (`@<sha> # vX` — keep this convention; Dependabot updates the SHAs), and `contents: write` scoped to the release-creation job only.
 
 Confirmed strengths from the same review: no `eval`/`exec`/`shell=True`, URL validation restricted to `github.com`, API calls only to `api.github.com`, path-traversal and symlink care in local scans.
 
