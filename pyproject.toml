@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 # `repopulse` is taken; `repo-pulse` is blocked as too similar — use `repopulse-cli`.
 # Import package and CLI entry point remain `repopulse`.
 name = "repopulse-cli"
-version = "0.3.5"
+version = "0.3.6"
 description = "A CLI tool that analyzes GitHub repository health and generates quality reports."
 authors = [{ name = "Ali Assiri" }]
 readme = "README.md"
