@@ -61,16 +61,16 @@ Check rules: deterministic, no network calls, never print sensitive file **conte
 - No silent large shifts of default scoring — `CHANGELOG.md` entry required; keep weights in sync across README, `docs/checks.md`, and `scoring.py`.
 - Prefer reducing false positives over adding noisy recommendations.
 
-## Known issues (external security review, 2026-08-07)
+## Security review (2026-08-07) — closed in v0.3.6
 
-Accepted findings, not yet fixed — good candidates for next work:
+An external security review produced 5 findings; all were fixed test-first and shipped in v0.3.6. What remains are the **standing rules** that came out of it:
 
-1. ~~Silent scan truncation~~ — fixed: `HealthReport.scan_truncated` now carries the local max-files cap and the GitHub tree API `truncated` flag, with explicit warnings in table/summary/markdown output.
-2. ~~Local scans claiming `private=False`~~ — fixed: `repository.private` is `bool | None`; local scans report `null`/"Unknown" (`schema_version` bumped to `1.1`).
-3. ~~Auto-loading `.env`~~ — fixed: `python-dotenv` removed entirely; the token comes only from `--token` or the process environment. Do not reintroduce automatic env-file loading.
-4. ~~Tag-pinned actions / broad release permissions~~ — fixed: all actions pinned to full commit SHAs (`@<sha> # vX` — keep this convention; Dependabot updates the SHAs), and `contents: write` scoped to the release-creation job only.
+- **No env-file auto-loading, ever.** The tool scans untrusted repos; `python-dotenv` was removed because its `.env` search can land inside the scanned repo (e.g. injecting `HTTPS_PROXY` to exfiltrate the token). The GitHub token comes only from `--token` or the process environment.
+- **Truncation must stay visible.** `HealthReport.scan_truncated` carries the local max-files cap and the GitHub tree API `truncated` flag; renderers warn. Any new file-listing path must propagate it.
+- **Never claim unverifiable facts.** Offline scans report `repository.private` as `null`/"Unknown" (this forced the `schema_version` 1.0 → 1.1 bump), not a guessed boolean.
+- **Pin actions by full commit SHA** with the `@<sha> # vX` comment convention (Dependabot updates the SHAs). Keep workflow permissions read-only by default; grant write per job only.
 
-Confirmed strengths from the same review: no `eval`/`exec`/`shell=True`, URL validation restricted to `github.com`, API calls only to `api.github.com`, path-traversal and symlink care in local scans.
+Confirmed strengths from the same review (preserve them): no `eval`/`exec`/`shell=True`, URL validation restricted to `github.com`, API calls only to `api.github.com`, path-traversal and symlink care in local scans.
 
 ## Hygiene rules for agents
 
