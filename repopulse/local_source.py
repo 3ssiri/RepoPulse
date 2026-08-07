@@ -38,10 +38,11 @@ _GITHUB_SSH = re.compile(
 )
 
 
-def iter_local_files(root: Path, max_files: int = MAX_FILES) -> list[FileItem]:
-    """Walk *root* and return blob FileItems with relative POSIX paths.
+def iter_local_files(root: Path, max_files: int = MAX_FILES) -> tuple[list[FileItem], bool]:
+    """Walk *root* and return (blob FileItems with relative POSIX paths, truncated).
 
-    Skips common dependency/cache directories. Caps at *max_files* for large trees.
+    Skips common dependency/cache directories. Caps at *max_files* for large trees;
+    *truncated* is True when files were left unvisited because of the cap.
     Does not follow directory symlinks outside the walk (followlinks=False).
     """
     root = root.resolve()
@@ -51,7 +52,7 @@ def iter_local_files(root: Path, max_files: int = MAX_FILES) -> list[FileItem]:
         current = Path(dirpath)
         for filename in filenames:
             if len(files) >= max_files:
-                return files
+                return files, True
             full = current / filename
             if full.is_symlink():
                 # List symlink files by name only; do not resolve outside root.
@@ -73,7 +74,7 @@ def iter_local_files(root: Path, max_files: int = MAX_FILES) -> list[FileItem]:
                     size=size,
                 )
             )
-    return files
+    return files, False
 
 
 def read_local_text(root: Path, rel_path: str, max_bytes: int = DEFAULT_MAX_BYTES) -> str | None:

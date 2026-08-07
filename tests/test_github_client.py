@@ -102,6 +102,53 @@ def test_get_tree_error_mentions_ref(monkeypatch):
         raise AssertionError("Expected GitHubAPIError")
 
 
+def test_get_tree_propagates_truncated_flag(monkeypatch):
+    def fake_get(url, headers=None, timeout=None):
+        class FakeResponse:
+            status_code = 200
+            headers = None
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {
+                    "tree": [{"path": "README.md", "type": "blob", "size": 10}],
+                    "truncated": True,
+                }
+
+        return FakeResponse()
+
+    monkeypatch.setattr(requests, "get", fake_get)
+
+    tree, truncated = GitHubClient().get_tree("owner", "repo", "main")
+
+    assert truncated is True
+    assert tree[0]["path"] == "README.md"
+
+
+def test_get_tree_truncated_defaults_to_false(monkeypatch):
+    def fake_get(url, headers=None, timeout=None):
+        class FakeResponse:
+            status_code = 200
+            headers = None
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"tree": []}
+
+        return FakeResponse()
+
+    monkeypatch.setattr(requests, "get", fake_get)
+
+    tree, truncated = GitHubClient().get_tree("owner", "repo", "main")
+
+    assert tree == []
+    assert truncated is False
+
+
 def test_list_open_issue_titles_paginates_and_skips_prs(monkeypatch):
     pages = {
         1: [

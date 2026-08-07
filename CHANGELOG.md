@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Trust / accuracy
+
+- **Truncated scans are now visible.** Large repositories no longer get a complete-looking score silently: the local max-files cap and the GitHub tree API `truncated` flag now surface as a new additive JSON field `scan_truncated` plus an explicit warning in table, summary, and markdown output. Same `schema_version` (`1.0`).
+
 ## 0.3.5 - 2026-08-06
 
 ### Trust / heuristics

@@ -43,6 +43,9 @@ class HealthReport(BaseModel):
     grade: str
     recommendations: list[str] = Field(default_factory=list)
     config: dict = Field(default_factory=dict)
+    # True when the file listing was cut short (local max-files cap or GitHub
+    # tree API truncation): checks ran on a partial file list.
+    scan_truncated: bool = False
 
 
 class CheckDelta(BaseModel):

@@ -73,6 +73,7 @@ def build_health_report_from_inputs(
     pyproject_content: str | None,
     workflow_contents: dict[str, str],
     config: RepoPulseConfig | None = None,
+    scan_truncated: bool = False,
 ) -> HealthReport:
     """Run the shared check pipeline and build a HealthReport."""
     config = config or RepoPulseConfig()
@@ -101,6 +102,7 @@ def build_health_report_from_inputs(
         grade=get_grade(total_score, max_score),
         recommendations=recommendations,
         config=config_to_public_dict(config),
+        scan_truncated=scan_truncated,
     )
 
 
@@ -142,7 +144,8 @@ def build_health_report(
     # When an explicit ref is scanned, surface it as default_branch so reports/labels show which ref was used.
     if ref is not None:
         repository.default_branch = ref
-    files = file_items_from_tree(client.get_tree(owner, repo, tree_ref))
+    tree, truncated = client.get_tree(owner, repo, tree_ref)
+    files = file_items_from_tree(tree)
 
     def load(path: str) -> str | None:
         return client.get_file_content(owner, repo, path, ref=tree_ref)
@@ -159,6 +162,7 @@ def build_health_report(
         pyproject_content=pyproject_content,
         workflow_contents=workflow_contents,
         config=config,
+        scan_truncated=truncated,
     )
 
 
@@ -168,7 +172,7 @@ def build_local_health_report(root: Path, config: RepoPulseConfig | None = None)
     if not root.is_dir():
         raise ValueError(f"Not a directory: {root}")
     config = config or RepoPulseConfig()
-    files = iter_local_files(root)
+    files, truncated = iter_local_files(root)
     repository = repository_info_from_path(root)
 
     def load(path: str) -> str | None:
@@ -186,4 +190,5 @@ def build_local_health_report(root: Path, config: RepoPulseConfig | None = None)
         pyproject_content=pyproject_content,
         workflow_contents=workflow_contents,
         config=config,
+        scan_truncated=truncated,
     )

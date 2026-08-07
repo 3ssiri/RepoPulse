@@ -179,9 +179,10 @@ def test_build_health_report_uses_ref_for_tree_and_content():
         "pushed_at": "2026-06-01T00:00:00Z",
         "description": None,
     }
-    client.get_tree.return_value = [
-        {"path": "README.md", "type": "blob", "size": 10},
-    ]
+    client.get_tree.return_value = (
+        [{"path": "README.md", "type": "blob", "size": 10}],
+        False,
+    )
     client.get_file_content.return_value = "# Hello\n\nA decent readme body for scoring."
 
     report = build_health_report(client, "owner", "repo", ref="feature/bar")
@@ -207,7 +208,7 @@ def test_build_health_report_without_ref_uses_default_branch():
         "pushed_at": "2026-06-01T00:00:00Z",
         "description": None,
     }
-    client.get_tree.return_value = []
+    client.get_tree.return_value = ([], False)
     client.get_file_content.return_value = None
 
     report = build_health_report(client, "owner", "repo")

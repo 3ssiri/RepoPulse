@@ -97,6 +97,48 @@ def test_render_summary_highlights_top_recommendations():
     assert "Add lockfile." not in summary
 
 
+def _minimal_report(**overrides) -> HealthReport:
+    fields: dict = {
+        "repository": RepositoryInfo(
+            owner="owner",
+            name="repo",
+            full_name="owner/repo",
+            url="https://github.com/owner/repo",
+            default_branch="main",
+            private=False,
+            stars=0,
+            forks=0,
+            open_issues=0,
+        ),
+        "checks": [],
+        "total_score": 80,
+        "grade": "Good",
+    }
+    fields.update(overrides)
+    return HealthReport(**fields)
+
+
+def test_truncated_scan_warns_in_human_formats_and_json():
+    report = _minimal_report(scan_truncated=True)
+
+    markdown = render_markdown(report)
+    summary = render_summary(report)
+    rendered_json = render_json(report)
+
+    assert "truncated" in markdown.lower()
+    assert "incomplete" in markdown.lower()
+    assert "truncated" in summary.lower()
+    assert '"scan_truncated": true' in rendered_json
+
+
+def test_complete_scan_has_no_truncation_warning():
+    report = _minimal_report()
+
+    assert "truncated" not in render_markdown(report).lower()
+    assert "truncated" not in render_summary(report).lower()
+    assert '"scan_truncated": false' in render_json(report)
+
+
 def test_render_issues_includes_fail_and_skips_clean_pass():
     report = HealthReport(
         repository=RepositoryInfo(

@@ -38,8 +38,10 @@ def test_iter_local_files_skips_ignored_dirs(tmp_path: Path):
     venv.mkdir(parents=True)
     (venv / "site.py").write_text("x", encoding="utf-8")
 
-    files = iter_local_files(tmp_path)
+    files, truncated = iter_local_files(tmp_path)
     paths = {item.path for item in files}
+
+    assert truncated is False
 
     assert "README.md" in paths
     assert not any(path.startswith("node_modules/") for path in paths)
@@ -115,10 +117,39 @@ def test_cli_scan_dot_uses_local_when_cwd_is_dir(tmp_path: Path, monkeypatch):
     assert '"schema_version"' in result.output
 
 
-def test_iter_local_files_caps_count(tmp_path: Path, monkeypatch):
+def test_iter_local_files_caps_count_and_reports_truncation(tmp_path: Path):
     for index in range(10):
         (tmp_path / f"f{index}.txt").write_text("x", encoding="utf-8")
     # Cap artificially low without changing module constant for other tests
-    files = iter_local_files(tmp_path, max_files=3)
+    files, truncated = iter_local_files(tmp_path, max_files=3)
     assert len(files) == 3
+    assert truncated is True
     assert MAX_FILES >= 3
+
+
+def test_iter_local_files_exact_cap_is_not_truncated(tmp_path: Path):
+    for index in range(3):
+        (tmp_path / f"f{index}.txt").write_text("x", encoding="utf-8")
+    files, truncated = iter_local_files(tmp_path, max_files=3)
+    assert len(files) == 3
+    assert truncated is False
+
+
+def test_build_local_health_report_flags_truncation(tmp_path: Path, monkeypatch):
+    import repopulse.analyzer as analyzer_module
+
+    _seed_healthy_tree(tmp_path)
+    real_iter = analyzer_module.iter_local_files
+    monkeypatch.setattr(
+        analyzer_module,
+        "iter_local_files",
+        lambda root: (real_iter(root)[0], True),
+    )
+    report = build_local_health_report(tmp_path)
+    assert report.scan_truncated is True
+
+
+def test_build_local_health_report_not_truncated_by_default(tmp_path: Path):
+    _seed_healthy_tree(tmp_path)
+    report = build_local_health_report(tmp_path)
+    assert report.scan_truncated is False

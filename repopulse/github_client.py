@@ -33,7 +33,9 @@ class GitHubClient:
     def get_repo(self, owner: str, repo: str) -> dict:
         return self._get(f"{self.base_url}/repos/{owner}/{repo}", timeout=20).json()
 
-    def get_tree(self, owner: str, repo: str, branch: str) -> list[dict]:
+    def get_tree(self, owner: str, repo: str, branch: str) -> tuple[list[dict], bool]:
+        """Return (tree items, truncated). GitHub sets ``truncated`` when the
+        recursive tree exceeds API limits and the listing is incomplete."""
         encoded_ref = quote(branch, safe="")
         try:
             data = self._get(
@@ -44,7 +46,7 @@ class GitHubClient:
             raise GitHubAPIError(
                 f"Could not load git tree for {owner}/{repo} at ref '{branch}'. {error}"
             ) from error
-        return data.get("tree", [])
+        return data.get("tree", []), bool(data.get("truncated", False))
 
     def get_file_content(self, owner: str, repo: str, path: str, ref: str | None = None) -> str | None:
         url = f"{self.base_url}/repos/{owner}/{repo}/contents/{path}"

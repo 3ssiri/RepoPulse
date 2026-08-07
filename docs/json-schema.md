@@ -35,6 +35,7 @@ Automation often pins `--fail-under` and compares `total_score` / per-check scor
 | `grade` | string | Excellent / Good / Fair / Weak / Critical. |
 | `recommendations` | array of string | Flattened action items. |
 | `config` | object | Applied config subset (may be empty). |
+| `scan_truncated` | boolean | `true` when the file listing was cut short (local max-files cap or GitHub tree API truncation) — checks ran on a partial file list. Additive field, same `schema_version`. |
 
 ## `repository` object
 
