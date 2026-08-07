@@ -19,7 +19,7 @@ dist-pypi/
 .cursor/
 
 
-# Private grant notes (local only)
-docs/openai-codex-oss-fund-ar.md
+# Private local-only notes (any name, any folder)
+*.local.md
 docs/*.local
 
