@@ -189,6 +189,8 @@ repopulse scan https://github.com/username/private-repo
 
 Token tips: [USAGE.md — Token hygiene](USAGE.md#token-hygiene-important).
 
+> RepoPulse never reads `.env` files — set the variable in your shell/CI (or pass `--token`) as shown above.
+
 For a private repo already checked out on disk:
 
 ```bash
@@ -231,7 +233,11 @@ Set `GITHUB_TOKEN` (or pass `--token`). Authenticated requests have a much highe
 
 ### Dependency conflicts with other tools
 
-Use a dedicated virtual environment (see above) instead of installing into a global Python that other apps share.
+Use a dedicated virtual environment (see above) instead of installing into a global Python that other apps share. For a CLI tool like RepoPulse, [pipx](https://pipx.pypa.io/) is the cleanest option — each tool gets its own isolated environment automatically:
+
+```bash
+pipx install repopulse-cli
+```
 
 ### Verify package metadata
 

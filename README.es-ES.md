@@ -4,6 +4,8 @@
 [![PyPI version](https://img.shields.io/pypi/v/repopulse-cli.svg)](https://pypi.org/project/repopulse-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+🌐 [English](README.md) · [العربية](README.ar.md) · **Español**
+
 RepoPulse es una CLI en Python que escanea repositorios de GitHub (o una carpeta local) y produce un **informe de salud**: puntuación sobre 100, comprobaciones pass/warn/fail y recomendaciones accionables.
 
 | | Nombre correcto |

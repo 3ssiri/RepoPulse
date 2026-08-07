@@ -6,6 +6,8 @@
 [![Python](https://img.shields.io/pypi/pyversions/repopulse-cli.svg)](https://pypi.org/project/repopulse-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+🌐 [English](README.md) · **العربية** · [Español](README.es-ES.md)
+
 ```bash
 pip install repopulse-cli
 repopulse scan .
@@ -105,8 +107,9 @@ GITHUB_TOKEN
 - جدول طرفية غني (الافتراضي)
 - الصيغ: `table` · `summary` · `markdown` · `json` · `issues`
 - تصدير Markdown (`--export`) وكتابة أي صيغة إلى ملف (`--output`)
-- عقد JSON ثابت (`schema_version` 1.0) — انظر [docs/json-schema.md](docs/json-schema.md)
+- عقد JSON ثابت (`schema_version` 1.1) — انظر [docs/json-schema.md](docs/json-schema.md)
 - Markdown أغنى: عدّادات pass/warn/fail وقسم الانتباه
+- نتائج صادقة عند القطع: إن تعذّر سرد ملفات مستودع ضخم كاملةً يظهر تحذير صريح مع حقل `scan_truncated` بدل درجة تبدو مكتملة
 
 ### المقارنة
 
@@ -138,6 +141,9 @@ strict · library · docs · release
   - تحت `tests/` أو `examples/`: تحذير (غالباً fixtures)
   - في جذر المشروع أو الكود الإنتاجي: فشل
 - فحوصات استشارية للتبعيات والأساس الأمني (توصيات دون تغيير الدرجة المئوية افتراضيًا)
+- **لا تحميل تلقائيًا لملفات `.env`** — الأداة تفحص مستودعات قد لا تكون موثوقة، فالتوكن يأتي فقط من `--token` أو متغير البيئة `GITHUB_TOKEN`
+- لا ادعاء لما لا يمكن التحقق منه: الفحص المحلي دون اتصال يعرض حالة خصوصية المستودع «غير معروفة» بدل التخمين
+- سلسلة توريد CI مشدّدة: كل الـ Actions مثبّتة ببصمات commit كاملة، وتحليل CodeQL، وصلاحيات مقيّدة
 
 ## الأوامر
 

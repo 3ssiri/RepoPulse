@@ -320,12 +320,18 @@ GITHUB_TOKEN=YOUR_GITHUB_TOKEN repopulse scan https://github.com/username/privat
 - Never commit tokens to the repository or put them in issue reports.
 - For local offline checks of a checked-out private repo, use `repopulse scan .` — no GitHub token required.
 - RepoPulse never prints sensitive file **contents**; it only reports matching file **names**.
+- RepoPulse **never reads `.env` files** (it scans repositories that may be untrusted). Export `GITHUB_TOKEN` in your shell/CI or pass `--token`.
 
 ## JSON contract
 
-Machine-readable reports use a stable top-level `schema_version` field (currently `1.0`).
+Machine-readable reports use a stable top-level `schema_version` field (currently `1.1`).
 
-See [docs/json-schema.md](docs/json-schema.md) for the field list and compatibility rules.
+Fields worth knowing for automation:
+
+- `scan_truncated` — `true` when the file listing was cut short (very large repositories); the score covers only the listed files.
+- `repository.private` — `null` when visibility cannot be verified (offline local scans), otherwise a boolean from the GitHub API.
+
+See [docs/json-schema.md](docs/json-schema.md) for the full field list and compatibility rules.
 
 ## Exit Codes
 

@@ -6,6 +6,8 @@
 [![Python](https://img.shields.io/pypi/pyversions/repopulse-cli.svg)](https://pypi.org/project/repopulse-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+🌐 **English** · [العربية](README.ar.md) · [Español](README.es-ES.md)
+
 ```bash
 pip install repopulse-cli
 repopulse scan .
@@ -106,8 +108,9 @@ Private repos: pass `--token` or set `GITHUB_TOKEN`. Details: [USAGE.md](USAGE.m
 - Rich **terminal table** (default).
 - Formats: `table`, `summary`, `markdown`, `json`, `issues`.
 - Export Markdown (`--export`) and write any format to a file (`--output`).
-- Stable JSON contract (`schema_version` 1.0) — see [docs/json-schema.md](docs/json-schema.md).
+- Stable JSON contract (`schema_version` 1.1) — see [docs/json-schema.md](docs/json-schema.md).
 - Richer Markdown: pass/warn/fail counts, attention sections, applied config.
+- Honest partial results: when a huge repository cannot be fully listed, the report carries `scan_truncated: true` and prints an explicit warning instead of a silently incomplete score.
 
 ### Compare
 
@@ -127,6 +130,9 @@ Private repos: pass `--token` or set `GITHUB_TOKEN`. Details: [USAGE.md](USAGE.m
 
 - Detects common **sensitive file names** (`.env`, keys, credentials) without printing file contents.
 - Advisory dependency and security baseline checks (recommendations; do not change the 100-point score by default).
+- **Never auto-loads `.env` files** — the tool scans repositories that may be untrusted, so the GitHub token comes only from `--token` or the `GITHUB_TOKEN` environment variable.
+- Reports only what it can verify: offline local scans mark repository visibility as **Unknown** instead of guessing.
+- Hardened CI supply chain: all GitHub Actions pinned to full commit SHAs, CodeQL analysis, least-privilege workflow permissions.
 
 ## Commands
 
