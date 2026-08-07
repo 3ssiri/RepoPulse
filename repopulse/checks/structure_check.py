@@ -1,4 +1,5 @@
 from pathlib import PurePosixPath
+from typing import Literal
 
 from repopulse.models import CheckResult, FileItem
 
@@ -253,7 +254,7 @@ def run_structure_check(files: list[FileItem]) -> CheckResult:
         score = 1
 
     if score >= 4:
-        status = "pass"
+        status: Literal["pass", "warn", "fail"] = "pass"
         if monorepo:
             message = "Monorepo / multi-package structure looks organized."
         else:

@@ -1,4 +1,5 @@
 from pathlib import PurePosixPath
+from typing import Literal
 
 from repopulse.models import CheckResult, FileItem
 from repopulse.utils import find_file, parse_json_content
@@ -85,7 +86,7 @@ def run_package_check(
 
     if strong:
         score = 5
-        status = "pass"
+        status: Literal["pass", "warn", "fail"] = "pass"
         message = "Package or project commands are documented."
         recommendations: list[str] = []
     elif soft:

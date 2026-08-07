@@ -1,4 +1,5 @@
 from pathlib import PurePosixPath
+from typing import Literal
 
 from repopulse.models import CheckResult, FileItem
 
@@ -186,7 +187,7 @@ def run_actions_check(files: list[FileItem], workflow_contents: dict[str, str] |
 
     recommendations: list[str] = []
     if score == 15:
-        status = "pass"
+        status: Literal["pass", "warn", "fail"] = "pass"
     elif score >= 12:
         status = "pass"
         if not has_quality:
