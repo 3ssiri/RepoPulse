@@ -57,7 +57,7 @@ Check rules: deterministic, no network calls, never print sensitive file **conte
 
 ## Contract rules (do not break silently)
 
-- JSON output is a stable contract (`schema_version` 1.0, `docs/json-schema.md`): any field change requires a `schema_version` bump.
+- JSON output is a stable contract (`schema_version` 1.1, `docs/json-schema.md`): any field change requires a `schema_version` bump.
 - No silent large shifts of default scoring — `CHANGELOG.md` entry required; keep weights in sync across README, `docs/checks.md`, and `scoring.py`.
 - Prefer reducing false positives over adding noisy recommendations.
 
@@ -71,6 +71,20 @@ An external security review produced 5 findings; all were fixed test-first and s
 - **Pin actions by full commit SHA** with the `@<sha> # vX` comment convention (Dependabot updates the SHAs). Keep workflow permissions read-only by default; grant write per job only.
 
 Confirmed strengths from the same review (preserve them): no `eval`/`exec`/`shell=True`, URL validation restricted to `github.com`, API calls only to `api.github.com`, path-traversal and symlink care in local scans.
+
+## Reviewing external pull requests
+
+Merging a PR permanently writes its author into this repository's history and contributor list (git keeps the PR author as commit `author`; the merge button only sets `committer`). Treat every outside PR as untrusted input and read it in full before merging — the friendly ones look identical to the hostile ones.
+
+Check, in order:
+
+1. **Workflow and CI files** — a changed `.github/workflows/*` can exfiltrate secrets or run arbitrary code on merge. Any action added must be SHA-pinned. Highest risk; check first even in a "docs-only" PR.
+2. **Every URL and install command**, including inside docs and translations — links must point at this repo or well-known registries; reject anything that pipes a remote script to a shell or redirects installs elsewhere.
+3. **Dependency and packaging changes** — a new or bumped dependency in `pyproject.toml` / lockfiles deserves the same scrutiny as code.
+4. **Documented behavior must match the code** — translations of README/USAGE go stale silently and can end up promising behavior the security rules above removed (e.g. `.env` loading).
+5. **Author pattern** — bulk drive-by PRs from automated accounts (very new account, thousands of public repos, one-line body, no follow-up) are usually promotional. That alone is not a reason to reject, but it removes any benefit of the doubt: judge the diff on its own merits, and never fast-merge on the assumption that "it is only docs".
+
+Precedent: PR #24 (Spanish README, merged 2026-08-02) came from such an account; the content was verified clean and the file has since been rewritten twice.
 
 ## Hygiene rules for agents
 
