@@ -1,0 +1,159 @@
+name: "RepoPulse Repository Health"
+description: "Score repository health (README, license, tests, CI, sensitive files) and optionally fail the build below a threshold."
+author: "3ssiri"
+
+branding:
+  icon: "activity"
+  color: "green"
+
+inputs:
+  target:
+    description: "GitHub repository URL or local path to scan. Defaults to the repository running the workflow."
+    required: false
+    default: ""
+  fail-under:
+    description: "Fail the job when the score percentage is below this value (0-100). Empty means report only, never fail."
+    required: false
+    default: ""
+  ref:
+    description: "Branch, tag, or commit SHA to scan. Defaults to the repository default branch."
+    required: false
+    default: ""
+  config:
+    description: "Path to a RepoPulse YAML config file (for example .repopulse.yml)."
+    required: false
+    default: ""
+  token:
+    description: "GitHub token used for the API. The default workflow token is enough for public repositories and rate limits."
+    required: false
+    default: ${{ github.token }}
+  job-summary:
+    description: "Write the Markdown health report to the GitHub Actions job summary."
+    required: false
+    default: "true"
+  version:
+    description: "Version of the repopulse-cli package to install. Pinned by default for reproducible runs; empty installs the latest."
+    required: false
+    default: "0.3.6"
+  python-version:
+    description: "Python version used to run RepoPulse."
+    required: false
+    default: "3.11"
+
+outputs:
+  score:
+    description: "Total score."
+    value: ${{ steps.scan.outputs.score }}
+  max-score:
+    description: "Maximum achievable score for the applied configuration."
+    value: ${{ steps.scan.outputs.max_score }}
+  percentage:
+    description: "Score as a percentage of max-score."
+    value: ${{ steps.scan.outputs.percentage }}
+  grade:
+    description: "Excellent, Good, Fair, Weak, or Critical."
+    value: ${{ steps.scan.outputs.grade }}
+  truncated:
+    description: "true when the repository was too large to list fully, so the score covers only part of it."
+    value: ${{ steps.scan.outputs.truncated }}
+  json-report:
+    description: "Path to the full JSON report on the runner."
+    value: ${{ steps.scan.outputs.json_report }}
+  markdown-report:
+    description: "Path to the Markdown report on the runner."
+    value: ${{ steps.scan.outputs.markdown_report }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install RepoPulse
+      shell: bash
+      env:
+        RP_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        # Distribution is repopulse-cli; `repopulse` on PyPI is an unrelated package.
+        if [ -n "$RP_VERSION" ]; then
+          python -m pip install --quiet --disable-pip-version-check "repopulse-cli==${RP_VERSION}"
+        else
+          python -m pip install --quiet --disable-pip-version-check repopulse-cli
+        fi
+
+    - name: Scan repository
+      id: scan
+      shell: bash
+      # Inputs travel through env and are never interpolated into the script body,
+      # so repository-controlled values cannot inject shell commands.
+      env:
+        RP_TARGET: ${{ inputs.target }}
+        RP_REF: ${{ inputs.ref }}
+        RP_CONFIG: ${{ inputs.config }}
+        RP_FAIL_UNDER: ${{ inputs.fail-under }}
+        RP_JOB_SUMMARY: ${{ inputs.job-summary }}
+        RP_DEFAULT_REPO: ${{ github.repository }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+
+        target="$RP_TARGET"
+        if [ -z "$target" ]; then
+          target="https://github.com/${RP_DEFAULT_REPO}"
+        fi
+
+        export RP_JSON_REPORT="${RUNNER_TEMP}/repopulse-report.json"
+        export RP_MARKDOWN_REPORT="${RUNNER_TEMP}/repopulse-report.md"
+
+        # A single scan produces both machine and human reports (one set of API calls).
+        args=(scan "$target" --format json --output "$RP_JSON_REPORT" --export "$RP_MARKDOWN_REPORT" --quiet)
+        if [ -n "$RP_REF" ]; then
+          args+=(--ref "$RP_REF")
+        fi
+        if [ -n "$RP_CONFIG" ]; then
+          args+=(--config "$RP_CONFIG")
+        fi
+
+        repopulse "${args[@]}"
+
+        if [ "$RP_JOB_SUMMARY" = "true" ] && [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+          cat "$RP_MARKDOWN_REPORT" >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+        # Outputs are published before the threshold gate, so a failing run still
+        # reports the score that caused it to fail.
+        python <<'PY'
+        import json
+        import os
+        import sys
+
+        json_report = os.environ["RP_JSON_REPORT"]
+        with open(json_report, encoding="utf-8") as handle:
+            report = json.load(handle)
+
+        total = int(report["total_score"])
+        maximum = int(report["max_score"])
+        percentage = round(total / maximum * 100) if maximum > 0 else 0
+        truncated = bool(report.get("scan_truncated", False))
+
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+            handle.write(f"score={total}\n")
+            handle.write(f"max_score={maximum}\n")
+            handle.write(f"percentage={percentage}\n")
+            handle.write(f"grade={report['grade']}\n")
+            handle.write(f"truncated={str(truncated).lower()}\n")
+            handle.write(f"json_report={json_report}\n")
+            handle.write(f"markdown_report={os.environ['RP_MARKDOWN_REPORT']}\n")
+
+        print(f"{report['repository']['full_name']}: {total}/{maximum} ({percentage}%) - {report['grade']}")
+        if truncated:
+            print("::warning::Repository too large to list fully; the score covers only part of it.")
+
+        threshold = os.environ.get("RP_FAIL_UNDER", "").strip()
+        if threshold and percentage < int(threshold):
+            print(f"::error::Health score {percentage}% is below the required {threshold}%.")
+            sys.exit(1)
+        PY

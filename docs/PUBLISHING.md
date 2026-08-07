@@ -93,6 +93,22 @@ git push origin v0.3.3
 pip install https://github.com/3ssiri/RepoPulse/releases/download/v0.3.3/repopulse_cli-0.3.3-py3-none-any.whl
 ```
 
+### GitHub Action release (do this with every version bump)
+
+The action in `action.yml` installs a **pinned** `repopulse-cli` version, and consumers reference a floating major tag (`@v1`). Both need attention at release time:
+
+1. Bump `inputs.version.default` in `action.yml` to the new package version (same commit as the `pyproject.toml` bump).
+2. After the version tag is pushed and the Release workflow is green, move the major tag:
+
+```bash
+git tag -fa v1 -m "RepoPulse action v1 -> v0.3.6"
+git push origin v1 --force
+```
+
+Consumers pinned to `@v1` pick the change up automatically; consumers pinned to a full SHA are unaffected.
+
+**Marketplace listing (one time):** open the GitHub Release for the tag, tick *Publish this Action to the GitHub Marketplace*, accept the terms, and pick the category. The listing requires `action.yml` at the repository root with `name`, `description`, and `branding` — all present.
+
 ### First / next PyPI publish
 
 After the pending publisher and `PUBLISH_TO_PYPI` variable are set, push a new `v*` tag (or re-run a failed **Publish to PyPI** job after fixing publisher config).

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- **GitHub Action** (`action.yml` at the repository root): run a health check in CI with `uses: 3ssiri/RepoPulse@v1`. Writes the Markdown report to the workflow run summary, exposes `score` / `max-score` / `percentage` / `grade` / `truncated` / report paths as outputs, and optionally fails the build via `fail-under`. Inputs are passed through environment variables (no shell interpolation), and the installed package version is pinned. Docs: [docs/github-action.md](docs/github-action.md).
+- CI dogfoods the action on every push.
+
 ## 0.3.6 - 2026-08-07
 
 Security/trust release: all five findings from an external security review are addressed.

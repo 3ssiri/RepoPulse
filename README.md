@@ -123,8 +123,20 @@ Private repos: pass `--token` or set `GITHUB_TOKEN`. Details: [USAGE.md](USAGE.m
 
 - `--format issues` — paste-ready Markdown for fail/warn checks.
 - `repopulse create-issues` — open real GitHub issues (`--dry-run` or `--yes`).
-- CI example: [examples/github-action-repopulse.yml](examples/github-action-repopulse.yml).
+- **GitHub Action** — health check in CI with the report in the run summary (see below).
 - Optional config `.repopulse.yml` with profiles: `strict`, `library`, `docs`, `release`.
+
+## GitHub Action
+
+Add a health check to any repository — no checkout step, no token setup:
+
+```yaml
+- uses: 3ssiri/RepoPulse@v1
+  with:
+    fail-under: "70"
+```
+
+The Markdown report is written to the workflow run summary, and `score`, `grade`, `percentage`, and `truncated` are exposed as step outputs. Full input/output reference and recipes: [docs/github-action.md](docs/github-action.md).
 
 ### Safety
 
@@ -220,6 +232,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [INSTALLATION.md](INSTALLATION.md).
 | [INSTALLATION.md](INSTALLATION.md) | PyPI, wheel, source, tokens, troubleshooting |
 | [USAGE.md](USAGE.md) | All commands, flags, CI, config, exit codes |
 | [REQUIREMENTS.md](REQUIREMENTS.md) | Runtime and dev dependencies |
+| [docs/github-action.md](docs/github-action.md) | GitHub Action inputs, outputs, recipes |
 | [docs/checks.md](docs/checks.md) | What each check evaluates |
 | [docs/json-schema.md](docs/json-schema.md) | JSON report contract |
 | [docs/PUBLISHING.md](docs/PUBLISHING.md) | Releases and PyPI publishing (maintainers) |

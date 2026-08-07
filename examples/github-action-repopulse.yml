@@ -1,13 +1,10 @@
 # Copy this workflow into .github/workflows/repopulse.yml in your repository.
-# Requires GITHUB_TOKEN (provided by Actions) for private repos / higher rate limits.
 #
 # Notes:
-# - RepoPulse scans the GitHub repository URL (via the GitHub API), not the local
-#   checkout on the runner. That matches the current CLI design.
-# - Optional: add --config .repopulse.yml if you keep a config file in the repo.
-# - PyPI package name is `repopulse-cli` (CLI remains `repopulse`).
-#   Do not `pip install repopulse` — that is an unrelated package on PyPI.
-# - If not installing from PyPI, use a checkout + `pip install -e .` instead.
+# - RepoPulse scans the GitHub repository through the API, not the checkout on
+#   the runner, so no `actions/checkout` step is needed.
+# - The default workflow token is enough for public repositories and rate limits.
+# - The Markdown health report is written to the workflow run summary.
 name: RepoPulse
 
 on:
@@ -19,27 +16,25 @@ jobs:
   health:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Repository health
+        id: health
+        uses: 3ssiri/RepoPulse@v1
         with:
-          python-version: "3.11"
-      # Install from PyPI (package name repopulse-cli; CLI is repopulse)
-      - name: Install RepoPulse
-        run: pip install repopulse-cli
-        # Local/dev alternative from a checkout of this project:
-        # run: pip install -e ".[dev]"
-      - name: Scan this repository on GitHub
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          REPO="${{ github.repository }}"
-          repopulse scan "https://github.com/${REPO}" \
-            --fail-under 70 \
-            --format summary \
-            --quiet
-        # Optional config file (uncomment if present):
-        #   repopulse scan "https://github.com/${REPO}" \
-        #     --config .repopulse.yml \
-        #     --fail-under 70 \
-        #     --format summary \
-        #     --quiet
+          # Fail the job below 70%. Remove to report without ever failing.
+          fail-under: "70"
+          # Optional config file kept in the repository:
+          # config: .repopulse.yml
+
+      - name: Use the score in later steps
+        run: echo "Scored ${{ steps.health.outputs.score }}/${{ steps.health.outputs.max-score }} (${{ steps.health.outputs.grade }})"
+
+# Alternative: run the CLI directly instead of the action.
+#
+#   - uses: actions/setup-python@v5
+#     with:
+#       python-version: "3.11"
+#   - run: pip install repopulse-cli
+#   - run: repopulse scan "https://github.com/${{ github.repository }}" --fail-under 70 --format summary --quiet
+#
+# PyPI package name is `repopulse-cli` (CLI remains `repopulse`).
+# Do not `pip install repopulse` — that is an unrelated package on PyPI.

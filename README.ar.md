@@ -128,7 +128,7 @@ repopulse compare <baseline> <target>
 - `repopulse create-issues` — إنشاء Issues حقيقية (`--dry-run` أو `--yes`)
   - **منع التكرار افتراضيًا** (يتخطى العناوين المطابقة لـ Issues مفتوحة)
   - `--no-dedupe` لإجبار الإنشاء
-- مثال CI: [examples/github-action-repopulse.yml](examples/github-action-repopulse.yml)
+- **إجراء GitHub جاهز** — فحص صحة في CI مع التقرير في ملخص التشغيل (انظر أدناه)
 - إعدادات اختيارية `.repopulse.yml` وملفات تعريف:
 
 ```text
@@ -144,6 +144,18 @@ strict · library · docs · release
 - **لا تحميل تلقائيًا لملفات `.env`** — الأداة تفحص مستودعات قد لا تكون موثوقة، فالتوكن يأتي فقط من `--token` أو متغير البيئة `GITHUB_TOKEN`
 - لا ادعاء لما لا يمكن التحقق منه: الفحص المحلي دون اتصال يعرض حالة خصوصية المستودع «غير معروفة» بدل التخمين
 - سلسلة توريد CI مشدّدة: كل الـ Actions مثبّتة ببصمات commit كاملة، وتحليل CodeQL، وصلاحيات مقيّدة
+
+## إجراء GitHub
+
+أضف فحص الصحة إلى أي مستودع — بلا خطوة سحب للكود وبلا إعداد توكن:
+
+```yaml
+- uses: 3ssiri/RepoPulse@v1
+  with:
+    fail-under: "70"
+```
+
+يُكتب تقرير Markdown في ملخص التشغيل، وتتاح الدرجة والتقدير والنسبة وعلامة القطع كمخرجات للخطوات التالية. المرجع الكامل: [docs/github-action.md](docs/github-action.md) (بالإنجليزية).
 
 ## الأوامر
 

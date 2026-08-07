@@ -37,3 +37,27 @@ jobs:
           python -m pip install build twine
           python -m build
           python -m twine check dist/*
+
+  # Dogfoods the published composite action against this repository.
+  action:
+    name: Action smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Run RepoPulse action
+        id: health
+        uses: ./
+        with:
+          fail-under: "70"
+
+      - name: Assert outputs are populated
+        env:
+          SCORE: ${{ steps.health.outputs.score }}
+          GRADE: ${{ steps.health.outputs.grade }}
+          TRUNCATED: ${{ steps.health.outputs.truncated }}
+        run: |
+          set -euo pipefail
+          echo "score=$SCORE grade=$GRADE truncated=$TRUNCATED"
+          test -n "$SCORE" && test -n "$GRADE"
+          test "$TRUNCATED" = "false"
