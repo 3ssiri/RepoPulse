@@ -29,7 +29,7 @@ def _score_percent(report: HealthReport) -> int:
 def render_markdown(report: HealthReport) -> str:
     """Render a maintainer-friendly Markdown health report."""
     repo = report.repository
-    private = "Yes" if repo.private else "No"
+    private = "Unknown" if repo.private is None else ("Yes" if repo.private else "No")
     updated = repo.last_pushed_at or "Unknown"
     percent = _score_percent(report)
     failed = [c for c in report.checks if c.status == "fail"]

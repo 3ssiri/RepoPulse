@@ -76,7 +76,8 @@ def test_repository_info_from_path_defaults(tmp_path: Path):
     assert info.stars == 0
     assert info.forks == 0
     assert info.open_issues == 0
-    assert info.private is False
+    # Offline scans cannot verify visibility; must not claim the repo is public.
+    assert info.private is None
     assert info.url
 
 

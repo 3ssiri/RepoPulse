@@ -66,7 +66,7 @@ Check rules: deterministic, no network calls, never print sensitive file **conte
 Accepted findings, not yet fixed — good candidates for next work:
 
 1. ~~Silent scan truncation~~ — fixed: `HealthReport.scan_truncated` now carries the local max-files cap and the GitHub tree API `truncated` flag, with explicit warnings in table/summary/markdown output.
-2. `repopulse/local_source.py:162` — local scans hardcode `private=False` even for clones of private repos; should be "unknown" unless verifiable.
+2. ~~Local scans claiming `private=False`~~ — fixed: `repository.private` is `bool | None`; local scans report `null`/"Unknown" (`schema_version` bumped to `1.1`).
 3. `repopulse/config.py` — `load_dotenv()` reads `.env` from the CWD. Since the tool scans untrusted repos, a scanned project's `.env` can influence the tool's environment. Prefer reading `GITHUB_TOKEN` explicitly from the process environment.
 4. `.github/workflows/*` — actions are pinned by tag (`@v7`, `@v3`…), not full commit SHA; GitHub recommends full-length SHA pinning. `release.yml` grants `contents: write` at workflow level — scope it to the job that needs it.
 

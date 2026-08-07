@@ -39,7 +39,7 @@ def test_render_markdown_contains_score_and_recommendations():
     assert "**78 / 100 (78%) - Good**" in markdown
     assert "Add a LICENSE file." in markdown
     assert "## Attention needed" in markdown
-    assert "schema `1.0`" in markdown
+    assert "schema `1.1`" in markdown
     assert "## Scope" in markdown
     assert "Python" in markdown
     assert "JavaScript" in markdown
@@ -66,7 +66,7 @@ def test_render_json_is_pretty_json():
     rendered = render_json(report)
 
     assert rendered.startswith("{\n")
-    assert '"schema_version": "1.0"' in rendered
+    assert '"schema_version": "1.1"' in rendered
     assert '"grade": "Excellent"' in rendered
 
 
@@ -116,6 +116,30 @@ def _minimal_report(**overrides) -> HealthReport:
     }
     fields.update(overrides)
     return HealthReport(**fields)
+
+
+def test_unknown_privacy_renders_as_unknown_and_null():
+    report = _minimal_report(
+        repository=RepositoryInfo(
+            owner="local",
+            name="repo",
+            full_name="local/repo",
+            url="file:///tmp/repo",
+            default_branch="main",
+            private=None,
+            stars=0,
+            forks=0,
+            open_issues=0,
+        )
+    )
+
+    assert "- **Private:** Unknown" in render_markdown(report)
+    assert '"private": null' in render_json(report)
+
+
+def test_known_privacy_still_renders_yes_no():
+    markdown = render_markdown(_minimal_report())
+    assert "- **Private:** No" in markdown
 
 
 def test_truncated_scan_warns_in_human_formats_and_json():

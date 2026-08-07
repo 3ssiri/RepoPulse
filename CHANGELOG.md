@@ -4,7 +4,8 @@
 
 ### Trust / accuracy
 
-- **Truncated scans are now visible.** Large repositories no longer get a complete-looking score silently: the local max-files cap and the GitHub tree API `truncated` flag now surface as a new additive JSON field `scan_truncated` plus an explicit warning in table, summary, and markdown output. Same `schema_version` (`1.0`).
+- **Truncated scans are now visible.** Large repositories no longer get a complete-looking score silently: the local max-files cap and the GitHub tree API `truncated` flag now surface as a new additive JSON field `scan_truncated` plus an explicit warning in table, summary, and markdown output.
+- **Local scans no longer claim the repository is public.** Offline scans cannot verify visibility, so `repository.private` is now `null` (rendered as "Unknown") instead of a hardcoded `false`. This changes the field's type in the JSON contract, so `schema_version` is bumped **`1.0` → `1.1`** (scan report only; comparison report stays `1.0`).
 
 ## 0.3.5 - 2026-08-06
 

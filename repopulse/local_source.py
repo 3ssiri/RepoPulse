@@ -160,7 +160,8 @@ def repository_info_from_path(root: Path) -> RepositoryInfo:
         description=None,
         url=url,
         default_branch=default_branch,
-        private=False,
+        # Offline scan cannot verify visibility; do not claim the repo is public.
+        private=None,
         stars=0,
         forks=0,
         open_issues=0,

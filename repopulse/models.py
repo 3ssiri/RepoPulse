@@ -10,7 +10,8 @@ class RepositoryInfo(BaseModel):
     description: str | None = None
     url: str
     default_branch: str
-    private: bool
+    # None = visibility unknown (e.g. offline local scans that cannot ask the API).
+    private: bool | None
     stars: int
     forks: int
     open_issues: int
@@ -35,7 +36,8 @@ class CheckResult(BaseModel):
 
 
 class HealthReport(BaseModel):
-    schema_version: str = "1.0"
+    # 1.1: repository.private may be null (unknown) for offline local scans.
+    schema_version: str = "1.1"
     repository: RepositoryInfo
     checks: list[CheckResult]
     total_score: int

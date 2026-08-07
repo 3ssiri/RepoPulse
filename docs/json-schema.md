@@ -5,7 +5,7 @@ RepoPulse JSON output (`--format json` / `--json`) is intended for automation.
 ## Stability rules
 
 - Top-level field `schema_version` identifies the document shape.
-- Current value: **`1.0`**.
+- Current value: **`1.1`** (`1.0` → `1.1`: `repository.private` may now be `null` when visibility is unknown, e.g. offline local scans).
 - Additive fields may appear without a version bump.
 - Removing or renaming fields, or changing meaning of existing fields, requires a new `schema_version`.
 
@@ -23,11 +23,11 @@ Automation often pins `--fail-under` and compares `total_score` / per-check scor
 
 **Do not** ship a release that breaks the JSON contract or moves the default 100-point scale without an entry in `CHANGELOG.md`.
 
-## Top-level fields (`schema_version` 1.0)
+## Top-level fields (`schema_version` 1.1)
 
 | Field | Type | Description |
 |---|---|---|
-| `schema_version` | string | Document version (`1.0`). |
+| `schema_version` | string | Document version (`1.1`). |
 | `repository` | object | Repository metadata (see below). |
 | `checks` | array | Ordered check results. |
 | `total_score` | integer | Sum of check scores after config. |
@@ -35,7 +35,7 @@ Automation often pins `--fail-under` and compares `total_score` / per-check scor
 | `grade` | string | Excellent / Good / Fair / Weak / Critical. |
 | `recommendations` | array of string | Flattened action items. |
 | `config` | object | Applied config subset (may be empty). |
-| `scan_truncated` | boolean | `true` when the file listing was cut short (local max-files cap or GitHub tree API truncation) — checks ran on a partial file list. Additive field, same `schema_version`. |
+| `scan_truncated` | boolean | `true` when the file listing was cut short (local max-files cap or GitHub tree API truncation) — checks ran on a partial file list. Additive field. |
 
 ## `repository` object
 
@@ -47,7 +47,7 @@ Automation often pins `--fail-under` and compares `total_score` / per-check scor
 | `description` | string or null |
 | `url` | string |
 | `default_branch` | string |
-| `private` | boolean |
+| `private` | boolean or null (null = visibility unknown, e.g. offline local scans) |
 | `stars` | integer |
 | `forks` | integer |
 | `open_issues` | integer |
