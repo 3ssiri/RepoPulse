@@ -80,6 +80,13 @@ def _normalize_ref(ref: str | None) -> str | None:
     return ref or None
 
 
+def _require_ref(ref: str) -> str:
+    normalized = _normalize_ref(ref)
+    if normalized is None:
+        raise ApiError(400, "invalid_ref", "Invalid request parameters.")
+    return normalized
+
+
 def _parse_repository(repository_url: str) -> tuple[str, str, str | None]:
     try:
         return parse_github_url(repository_url)
@@ -193,18 +200,20 @@ def create_app() -> FastAPI:
     @app.post("/api/compare")
     def compare(payload: CompareRequest) -> dict:
         owner, repo, _ = _parse_repository(payload.repository_url)
+        baseline_ref = _require_ref(payload.baseline_ref)
+        target_ref = _require_ref(payload.target_ref)
         client = _make_client()
         _reject_private(client, owner, repo)
         try:
-            baseline = build_health_report(client, owner, repo, ref=payload.baseline_ref)
-            target = build_health_report(client, owner, repo, ref=payload.target_ref)
+            baseline = build_health_report(client, owner, repo, ref=baseline_ref)
+            target = build_health_report(client, owner, repo, ref=target_ref)
         except GitHubAPIError as error:
             raise _map_github_error(error) from error
         comparison = build_comparison(
             baseline,
             target,
-            baseline_label=payload.baseline_ref,
-            target_label=payload.target_ref,
+            baseline_label=baseline_ref,
+            target_label=target_ref,
         )
         return comparison.model_dump()
 

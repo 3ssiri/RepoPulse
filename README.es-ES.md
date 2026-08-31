@@ -77,6 +77,7 @@ Todas las opciones: [USAGE.md](USAGE.md).
 - Config `.repopulse.yml` y perfiles: `strict`, `library`, `docs`, `release`
 - Detección de nombres de archivos sensibles **sin** imprimir secretos
 - Ejemplo de GitHub Actions: [examples/github-action-repopulse.yml](examples/github-action-repopulse.yml)
+- Capa web opcional + WebMCP: [docs/webmcp-challenge.md](docs/webmcp-challenge.md)
 
 ## Enlaces
 

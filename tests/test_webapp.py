@@ -411,3 +411,64 @@ def test_compare_rejects_private_repo(monkeypatch):
     )
     assert response.status_code == 403
     assert response.json()["detail"]["code"] == "private_repository_not_supported"
+
+
+def test_compare_strips_whitespace_refs(monkeypatch):
+    captured = []
+
+    def fake_build(client_obj, owner, repo, config=None, ref=None):
+        captured.append(ref)
+        return sample_report()
+
+    monkeypatch.setattr(webapp, "GitHubClient", FakeClient)
+    monkeypatch.setattr(webapp, "build_health_report", fake_build)
+    client = TestClient(webapp.app)
+    response = client.post(
+        "/api/compare",
+        json={
+            "repository_url": VALID_URL,
+            "baseline_ref": "  v0.3.5  ",
+            "target_ref": "\tv0.3.6\n",
+        },
+    )
+    assert response.status_code == 200
+    assert captured == ["v0.3.5", "v0.3.6"]
+    assert response.json()["baseline_label"] == "v0.3.5"
+    assert response.json()["target_label"] == "v0.3.6"
+
+
+def test_compare_rejects_blank_refs(client):
+    response = client.post(
+        "/api/compare",
+        json={"repository_url": VALID_URL, "baseline_ref": "   ", "target_ref": "main"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "invalid_ref"
+
+
+def test_frontend_commits_repository_only_after_scan_success():
+    """Failed scans must not overwrite the selected repository (dashboard/agent share state)."""
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "webapp" / "static" / "app.js").read_text(
+        encoding="utf-8"
+    )
+    function = source.split("async function scanRepository", 1)[1].split(
+        "async function compareRefs", 1
+    )[0]
+    before_try, after_try = function.split("try {", 1)
+    assert "state.repositoryUrl = repositoryUrl" not in before_try
+    assert "state.repositoryUrl = repositoryUrl" in after_try.split("} catch", 1)[0]
+
+
+def test_frontend_compare_error_is_human_readable():
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "webapp" / "static" / "app.js").read_text(
+        encoding="utf-8"
+    )
+    function = source.split("async function compareRefs", 1)[1].split(
+        "/* All GitHub-derived data", 1
+    )[0]
+    assert "scan_repository" not in function
+    assert "Scan a repository first" in function

@@ -62,11 +62,14 @@ async function parseApiResponse(response) {
   return body;
 }
 
+function syncScanForm(repositoryUrl, ref) {
+  if (els["repository-url"]) els["repository-url"].value = repositoryUrl;
+  if (els["ref"]) els["ref"].value = ref || "";
+}
+
 /* Single scan path used by BOTH the Scan button and the WebMCP
  * scan_repository tool. Returns the structured HealthReport. */
 async function scanRepository(repositoryUrl, ref, signal) {
-  state.repositoryUrl = repositoryUrl;
-  state.ref = ref || "";
   setError(null);
   setStatus("scanning", "Scanning " + repositoryUrl + " ...");
   try {
@@ -77,15 +80,17 @@ async function scanRepository(repositoryUrl, ref, signal) {
       signal: signal || undefined,
     });
     const report = await parseApiResponse(response);
+    state.repositoryUrl = repositoryUrl;
+    state.ref = ref || "";
     state.currentReport = report;
     state.currentComparison = null;
+    syncScanForm(repositoryUrl, ref);
     renderReport(report);
     renderComparison(null);
     setStatus("idle", "Scan complete: " + report.repository.full_name +
       " — " + report.total_score + "/" + report.max_score + " (" + report.grade + ")");
     return report;
   } catch (error) {
-    state.currentReport = state.currentReport; // keep previous report visible
     setStatus("idle", "");
     if (error && error.name === "AbortError") {
       setError("Scan was cancelled.");
@@ -100,7 +105,7 @@ async function scanRepository(repositoryUrl, ref, signal) {
  * compare_refs tool. Returns the structured ComparisonReport. */
 async function compareRefs(baselineRef, targetRef, signal) {
   if (!state.repositoryUrl) {
-    throw new Error("No repository is selected. Run scan_repository first.");
+    throw new Error("No repository is selected. Scan a repository first.");
   }
   setError(null);
   setStatus("comparing", "Comparing " + baselineRef + " with " + targetRef + " ...");

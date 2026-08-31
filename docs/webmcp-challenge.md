@@ -109,10 +109,11 @@ loading state.
 
 ## Testing
 
-`tests/test_webapp.py` (27 tests) covers: health, index, error mapping
+`tests/test_webapp.py` (31 tests) covers: health, index, error mapping
 (invalid URL/host, 404 repo vs ref, rate limit, network failure, 502),
 ref precedence, `scan_truncated` passthrough, private-repo rejection,
-token/traceback leak checks, and the compare contract. All network and core
+token/traceback leak checks, the compare contract, whitespace/blank compare
+refs, and frontend state-commit contracts. All network and core
 calls are mocked — tests never touch real GitHub.
 
 ## Demo flow
