@@ -51,6 +51,7 @@ report (table | summary | markdown | json | issues)
 | `repopulse/settings.py` | `.repopulse.yml` and named profiles. |
 | `repopulse/report.py` | All human/machine renderers. |
 | `repopulse/checks/` | One independent check per file. |
+| `webapp/` | Optional FastAPI + WebMCP layer (extra `web`); thin adapter over the core, not packaged. |
 
 ## Check Design
 
