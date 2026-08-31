@@ -16,6 +16,33 @@ const state = {
   webmcpAvailable: false,
 };
 
+let requestGeneration = 0;
+let activeController = null;
+
+function isStaleResult(startedGeneration, currentGeneration, startedUrl, currentUrl) {
+  return startedGeneration !== currentGeneration || (currentUrl !== "" && startedUrl !== currentUrl);
+}
+
+function beginRequest() {
+  requestGeneration += 1;
+  if (activeController) {
+    activeController.abort();
+  }
+  activeController = new AbortController();
+  return { generation: requestGeneration, controller: activeController };
+}
+
+function bindExternalSignal(controller, external) {
+  if (!external) return;
+  if (external.aborted) {
+    controller.abort();
+    return;
+  }
+  external.addEventListener("abort", function onAbort() {
+    controller.abort();
+  }, { once: true });
+}
+
 const els = {};
 
 function collectElements() {
@@ -70,6 +97,8 @@ function syncScanForm(repositoryUrl, ref) {
 /* Single scan path used by BOTH the Scan button and the WebMCP
  * scan_repository tool. Returns the structured HealthReport. */
 async function scanRepository(repositoryUrl, ref, signal) {
+  const started = beginRequest();
+  bindExternalSignal(started.controller, signal);
   setError(null);
   setStatus("scanning", "Scanning " + repositoryUrl + " ...");
   try {
@@ -77,9 +106,14 @@ async function scanRepository(repositoryUrl, ref, signal) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ repository_url: repositoryUrl, ref: ref || null }),
-      signal: signal || undefined,
+      signal: started.controller.signal,
     });
     const report = await parseApiResponse(response);
+    if (isStaleResult(started.generation, requestGeneration, repositoryUrl, state.repositoryUrl)) {
+      const error = new Error("Request superseded.");
+      error.name = "AbortError";
+      throw error;
+    }
     state.repositoryUrl = repositoryUrl;
     state.ref = ref || "";
     state.currentReport = report;
@@ -91,6 +125,9 @@ async function scanRepository(repositoryUrl, ref, signal) {
       " — " + report.total_score + "/" + report.max_score + " (" + report.grade + ")");
     return report;
   } catch (error) {
+    if (started.generation !== requestGeneration) {
+      throw error;
+    }
     setStatus("idle", "");
     if (error && error.name === "AbortError") {
       setError("Scan was cancelled.");
@@ -104,29 +141,40 @@ async function scanRepository(repositoryUrl, ref, signal) {
 /* Single compare path used by BOTH the Compare button and the WebMCP
  * compare_refs tool. Returns the structured ComparisonReport. */
 async function compareRefs(baselineRef, targetRef, signal) {
-  if (!state.repositoryUrl) {
-    throw new Error("No repository is selected. Scan a repository first.");
-  }
-  setError(null);
-  setStatus("comparing", "Comparing " + baselineRef + " with " + targetRef + " ...");
+  const started = beginRequest();
+  bindExternalSignal(started.controller, signal);
+  const startedUrl = state.repositoryUrl;
   try {
+    if (!startedUrl) {
+      throw new Error("No repository is selected. Scan a repository first.");
+    }
+    setError(null);
+    setStatus("comparing", "Comparing " + baselineRef + " with " + targetRef + " ...");
     const response = await fetch("/api/compare", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        repository_url: state.repositoryUrl,
+        repository_url: startedUrl,
         baseline_ref: baselineRef,
         target_ref: targetRef,
       }),
-      signal: signal || undefined,
+      signal: started.controller.signal,
     });
     const comparison = await parseApiResponse(response);
+    if (isStaleResult(started.generation, requestGeneration, startedUrl, state.repositoryUrl)) {
+      const error = new Error("Request superseded.");
+      error.name = "AbortError";
+      throw error;
+    }
     state.currentComparison = comparison;
     renderComparison(comparison);
     setStatus("idle", "Comparison complete: delta " + comparison.score_delta +
       " (" + comparison.baseline_score + " → " + comparison.target_score + ")");
     return comparison;
   } catch (error) {
+    if (started.generation !== requestGeneration) {
+      throw error;
+    }
     setStatus("idle", "");
     if (error && error.name === "AbortError") {
       setError("Comparison was cancelled.");
@@ -404,6 +452,7 @@ function registerWebMCPTools() {
     state.webmcpAvailable = true;
     renderWebMCPStatus();
   }).catch(() => {
+    registration.abort();
     state.webmcpAvailable = false;
     renderWebMCPStatus();
   });

@@ -156,7 +156,7 @@ def test_scan_rejects_overlong_ref(client):
 def test_scan_body_ref_takes_precedence_over_url_ref(monkeypatch):
     captured = {}
 
-    def fake_build(client_obj, owner, repo, config=None, ref=None):
+    def fake_build(client_obj, owner, repo, config=None, ref=None, **kwargs):
         captured["ref"] = ref
         return sample_report()
 
@@ -174,7 +174,7 @@ def test_scan_body_ref_takes_precedence_over_url_ref(monkeypatch):
 def test_scan_url_ref_used_when_body_ref_missing(monkeypatch):
     captured = {}
 
-    def fake_build(client_obj, owner, repo, config=None, ref=None):
+    def fake_build(client_obj, owner, repo, config=None, ref=None, **kwargs):
         captured["ref"] = ref
         return sample_report()
 
@@ -189,7 +189,7 @@ def test_scan_url_ref_used_when_body_ref_missing(monkeypatch):
 def test_scan_empty_body_ref_falls_back_to_url_ref(monkeypatch):
     captured = {}
 
-    def fake_build(client_obj, owner, repo, config=None, ref=None):
+    def fake_build(client_obj, owner, repo, config=None, ref=None, **kwargs):
         captured["ref"] = ref
         return sample_report()
 
@@ -315,7 +315,7 @@ def test_errors_do_not_leak_token_or_traceback(monkeypatch):
 
 
 def test_compare_valid(monkeypatch):
-    def fake_build(client_obj, owner, repo, config=None, ref=None):
+    def fake_build(client_obj, owner, repo, config=None, ref=None, **kwargs):
         return sample_report()
 
     monkeypatch.setattr(webapp, "GitHubClient", FakeClient)
@@ -416,7 +416,7 @@ def test_compare_rejects_private_repo(monkeypatch):
 def test_compare_strips_whitespace_refs(monkeypatch):
     captured = []
 
-    def fake_build(client_obj, owner, repo, config=None, ref=None):
+    def fake_build(client_obj, owner, repo, config=None, ref=None, **kwargs):
         captured.append(ref)
         return sample_report()
 
@@ -472,3 +472,158 @@ def test_frontend_compare_error_is_human_readable():
     )[0]
     assert "scan_repository" not in function
     assert "Scan a repository first" in function
+
+
+FRONTEND_JS = (
+    __import__("pathlib").Path(__file__).resolve().parents[1] / "webapp" / "static" / "app.js"
+)
+
+
+def _frontend_source() -> str:
+    return FRONTEND_JS.read_text(encoding="utf-8")
+
+
+def test_frontend_compare_without_scan_goes_through_seterror():
+    """Compare-before-scan must hit the catch that calls setError, not throw first."""
+    function = _frontend_source().split("async function compareRefs", 1)[1].split(
+        "/* All GitHub-derived data", 1
+    )[0]
+    before_try, rest = function.split("try {", 1)
+    assert "No repository is selected" not in before_try
+    try_body, catch_body = rest.split("} catch", 1)
+    assert "No repository is selected" in try_body
+    assert "setError" in catch_body
+
+
+def test_scan_rejects_overlong_url_derived_ref(client):
+    long_ref = "a" * 300
+    url = f"{VALID_URL}/tree/{long_ref}"
+    assert len(url) <= 512
+    response = client.post("/api/scan", json={"repository_url": url})
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "invalid_ref"
+
+
+def test_scan_url_ref_at_max_length_is_accepted(monkeypatch):
+    captured = {}
+
+    def fake_build(client_obj, owner, repo, config=None, ref=None, **kwargs):
+        captured["ref"] = ref
+        return sample_report()
+
+    monkeypatch.setattr(webapp, "GitHubClient", FakeClient)
+    monkeypatch.setattr(webapp, "build_health_report", fake_build)
+    client = TestClient(webapp.app)
+    ref = "b" * 256
+    response = client.post("/api/scan", json={"repository_url": f"{VALID_URL}/tree/{ref}"})
+    assert response.status_code == 200
+    assert captured["ref"] == ref
+
+
+def test_scan_passes_privacy_metadata_into_build(monkeypatch):
+    captured = {}
+
+    class CountingClient(FakeClient):
+        def __init__(self, token=None):
+            super().__init__(token)
+            self.calls = 0
+
+        def get_repo(self, owner, repo):
+            self.calls += 1
+            captured["client"] = self
+            return {"private": False, "full_name": "octo/hello"}
+
+    def fake_build(client_obj, owner, repo, config=None, ref=None, repo_data=None, **kwargs):
+        captured["repo_data"] = repo_data
+        return sample_report()
+
+    monkeypatch.setattr(webapp, "GitHubClient", CountingClient)
+    monkeypatch.setattr(webapp, "build_health_report", fake_build)
+    client = TestClient(webapp.app)
+    response = client.post("/api/scan", json={"repository_url": VALID_URL})
+    assert response.status_code == 200
+    assert captured["client"].calls == 1
+    assert captured["repo_data"] == {"private": False, "full_name": "octo/hello"}
+
+
+def test_compare_reuses_privacy_metadata_for_both_scans(monkeypatch):
+    captured = {"repo_data": [], "get_repo": 0}
+
+    class CountingClient(FakeClient):
+        def get_repo(self, owner, repo):
+            captured["get_repo"] += 1
+            return {"private": False}
+
+    def fake_build(client_obj, owner, repo, config=None, ref=None, repo_data=None, **kwargs):
+        captured["repo_data"].append(repo_data)
+        return sample_report()
+
+    monkeypatch.setattr(webapp, "GitHubClient", CountingClient)
+    monkeypatch.setattr(webapp, "build_health_report", fake_build)
+    client = TestClient(webapp.app)
+    response = client.post(
+        "/api/compare",
+        json={"repository_url": VALID_URL, "baseline_ref": "a", "target_ref": "b"},
+    )
+    assert response.status_code == 200
+    assert captured["get_repo"] == 1
+    assert captured["repo_data"] == [{"private": False}, {"private": False}]
+
+
+def test_frontend_aborts_partial_webmcp_registration():
+    source = _frontend_source()
+    block = source.split("Promise.all", 1)[1]
+    catch = block.split(".catch", 1)[1]
+    abort_at = catch.find("registration.abort()")
+    unavailable_at = catch.find("webmcpAvailable = false")
+    assert abort_at != -1
+    assert unavailable_at != -1
+    assert abort_at < unavailable_at
+
+
+def test_stale_compare_is_discarded_after_newer_scan():
+    """Compare for repo A must not commit after a newer scan of repo B."""
+    import json
+    import re
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        pytest.skip("node is required to execute the stale-result predicate")
+
+    source = _frontend_source()
+    match = re.search(
+        r"function isStaleResult\([^)]*\) \{\s*return [^;]+;\s*\}",
+        source,
+    )
+    assert match is not None, "isStaleResult helper is missing"
+    script = (
+        match.group(0)
+        + """
+        const stale = isStaleResult(1, 2, 'https://github.com/a/a', 'https://github.com/b/b');
+        const same = isStaleResult(2, 2, 'https://github.com/b/b', 'https://github.com/b/b');
+        const olderScan = isStaleResult(1, 2, 'https://github.com/b/b', 'https://github.com/b/b');
+        console.log(JSON.stringify({stale, same, olderScan}));
+        """
+    )
+    result = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True)
+    payload = json.loads(result.stdout)
+    assert payload["stale"] is True
+    assert payload["same"] is False
+    assert payload["olderScan"] is True
+
+
+def test_frontend_scan_and_compare_ignore_stale_results():
+    source = _frontend_source()
+    scan = source.split("async function scanRepository", 1)[1].split(
+        "async function compareRefs", 1
+    )[0]
+    compare = source.split("async function compareRefs", 1)[1].split(
+        "/* All GitHub-derived data", 1
+    )[0]
+    for body in (scan, compare):
+        assert "isStaleResult(" in body
+        commit_at = body.find("state.current")
+        stale_at = body.find("isStaleResult(")
+        assert stale_at != -1
+        assert stale_at < commit_at or "if (isStaleResult" in body

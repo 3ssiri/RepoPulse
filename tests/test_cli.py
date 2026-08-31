@@ -217,6 +217,30 @@ def test_build_health_report_without_ref_uses_default_branch():
     assert report.repository.default_branch == "develop"
 
 
+def test_build_health_report_reuses_provided_repo_data():
+    client = MagicMock()
+    repo_data = {
+        "name": "repo",
+        "full_name": "owner/repo",
+        "html_url": "https://github.com/owner/repo",
+        "default_branch": "main",
+        "private": False,
+        "stargazers_count": 1,
+        "forks_count": 0,
+        "open_issues_count": 0,
+        "pushed_at": "2026-06-01T00:00:00Z",
+        "description": None,
+    }
+    client.get_tree.return_value = ([], False)
+    client.get_file_content.return_value = None
+
+    report = build_health_report(client, "owner", "repo", repo_data=repo_data)
+
+    client.get_repo.assert_not_called()
+    assert report.repository.full_name == "owner/repo"
+    assert report.repository.stars == 1
+
+
 def _report_with_fail() -> HealthReport:
     return HealthReport(
         repository=RepositoryInfo(

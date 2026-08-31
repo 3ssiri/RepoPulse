@@ -12,6 +12,11 @@
 
 - Web dashboard keeps the last successful repository selected when a later scan fails, so compare and the on-screen report stay aligned.
 - Compare form error tells humans to scan a repository first (no tool-name jargon). Whitespace-only compare refs are rejected.
+- Compare-before-scan now shows the error in the page instead of failing silently.
+- In-flight scan/compare results are discarded when a newer request has already changed the selected repository.
+- URL-derived refs use the same 256-character limit as body refs.
+- Partial WebMCP tool registration is aborted if any `registerTool` call fails.
+- The web adapter reuses the privacy-check repository payload so scan/compare do not call `get_repo` twice.
 
 ## 0.3.6 - 2026-08-07
 

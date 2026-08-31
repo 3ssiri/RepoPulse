@@ -80,11 +80,21 @@ def _normalize_ref(ref: str | None) -> str | None:
     return ref or None
 
 
-def _require_ref(ref: str) -> str:
+def _checked_ref(ref: str | None, *, required: bool = False) -> str | None:
     normalized = _normalize_ref(ref)
     if normalized is None:
+        if required:
+            raise ApiError(400, "invalid_ref", "Invalid request parameters.")
+        return None
+    if len(normalized) > MAX_REF_LENGTH:
         raise ApiError(400, "invalid_ref", "Invalid request parameters.")
     return normalized
+
+
+def _require_ref(ref: str) -> str:
+    checked = _checked_ref(ref, required=True)
+    assert checked is not None
+    return checked
 
 
 def _parse_repository(repository_url: str) -> tuple[str, str, str | None]:
@@ -94,7 +104,7 @@ def _parse_repository(repository_url: str) -> tuple[str, str, str | None]:
         raise ApiError(400, "invalid_repository_url", str(error)) from error
 
 
-def _reject_private(client: GitHubClient, owner: str, repo: str) -> None:
+def _reject_private(client: GitHubClient, owner: str, repo: str) -> dict:
     """Refuse private repositories before any tree/file content is read."""
     try:
         data = client.get_repo(owner, repo)
@@ -106,6 +116,7 @@ def _reject_private(client: GitHubClient, owner: str, repo: str) -> None:
             "private_repository_not_supported",
             "Private repositories are not supported by the web app.",
         )
+    return data
 
 
 def _map_github_error(error: GitHubAPIError) -> ApiError:
@@ -187,12 +198,14 @@ def create_app() -> FastAPI:
     @app.post("/api/scan")
     def scan(payload: ScanRequest) -> dict:
         owner, repo, url_ref = _parse_repository(payload.repository_url)
-        body_ref = _normalize_ref(payload.ref)
-        effective_ref = body_ref if body_ref is not None else url_ref
+        body_ref = _checked_ref(payload.ref)
+        effective_ref = body_ref if body_ref is not None else _checked_ref(url_ref)
         client = _make_client()
-        _reject_private(client, owner, repo)
+        repo_data = _reject_private(client, owner, repo)
         try:
-            report = build_health_report(client, owner, repo, ref=effective_ref)
+            report = build_health_report(
+                client, owner, repo, ref=effective_ref, repo_data=repo_data
+            )
         except GitHubAPIError as error:
             raise _map_github_error(error) from error
         return report.model_dump()
@@ -203,10 +216,14 @@ def create_app() -> FastAPI:
         baseline_ref = _require_ref(payload.baseline_ref)
         target_ref = _require_ref(payload.target_ref)
         client = _make_client()
-        _reject_private(client, owner, repo)
+        repo_data = _reject_private(client, owner, repo)
         try:
-            baseline = build_health_report(client, owner, repo, ref=baseline_ref)
-            target = build_health_report(client, owner, repo, ref=target_ref)
+            baseline = build_health_report(
+                client, owner, repo, ref=baseline_ref, repo_data=repo_data
+            )
+            target = build_health_report(
+                client, owner, repo, ref=target_ref, repo_data=repo_data
+            )
         except GitHubAPIError as error:
             raise _map_github_error(error) from error
         comparison = build_comparison(
