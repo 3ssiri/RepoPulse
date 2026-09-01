@@ -19,8 +19,12 @@ const state = {
 let requestGeneration = 0;
 let activeController = null;
 
-function isStaleResult(startedGeneration, currentGeneration, startedUrl, currentUrl) {
-  return startedGeneration !== currentGeneration || (currentUrl !== "" && startedUrl !== currentUrl);
+function isStaleRequest(startedGeneration) {
+  return startedGeneration !== requestGeneration;
+}
+
+function isStaleComparison(startedGeneration, startedUrl) {
+  return isStaleRequest(startedGeneration) || startedUrl !== state.repositoryUrl;
 }
 
 function beginRequest() {
@@ -109,7 +113,7 @@ async function scanRepository(repositoryUrl, ref, signal) {
       signal: started.controller.signal,
     });
     const report = await parseApiResponse(response);
-    if (isStaleResult(started.generation, requestGeneration, repositoryUrl, state.repositoryUrl)) {
+    if (isStaleRequest(started.generation)) {
       const error = new Error("Request superseded.");
       error.name = "AbortError";
       throw error;
@@ -161,7 +165,7 @@ async function compareRefs(baselineRef, targetRef, signal) {
       signal: started.controller.signal,
     });
     const comparison = await parseApiResponse(response);
-    if (isStaleResult(started.generation, requestGeneration, startedUrl, state.repositoryUrl)) {
+    if (isStaleComparison(started.generation, startedUrl)) {
       const error = new Error("Request superseded.");
       error.name = "AbortError";
       throw error;
