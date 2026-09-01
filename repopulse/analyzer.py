@@ -135,10 +135,12 @@ def build_health_report(
     repo: str,
     config: RepoPulseConfig | None = None,
     ref: str | None = None,
+    *,
+    repo_data: dict | None = None,
 ) -> HealthReport:
     config = config or RepoPulseConfig()
-    repo_data = client.get_repo(owner, repo)
-    repository = repo_info_from_api(owner, repo, repo_data)
+    data = repo_data if repo_data is not None else client.get_repo(owner, repo)
+    repository = repo_info_from_api(owner, repo, data)
     # Tree + content loads use the explicit ref when given, otherwise the API default branch.
     tree_ref = ref or repository.default_branch
     # When an explicit ref is scanned, surface it as default_branch so reports/labels show which ref was used.

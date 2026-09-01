@@ -4,8 +4,21 @@
 
 ### Added
 
+- **Optional web app + WebMCP** (`webapp/`, extra `web`): one-page dashboard over the existing scan/compare engine, plus four read-only tools (`scan_repository`, `get_attention_items`, `get_check_details`, `compare_refs`) so a human and an agent share the same page state. Public github.com repositories only; `GITHUB_TOKEN` is server-side. Not packaged in `repopulse-cli`. Docs: [docs/webmcp-challenge.md](docs/webmcp-challenge.md).
 - **GitHub Action** (`action.yml` at the repository root): run a health check in CI with `uses: 3ssiri/RepoPulse@v1`. Writes the Markdown report to the workflow run summary, exposes `score` / `max-score` / `percentage` / `grade` / `truncated` / report paths as outputs, and optionally fails the build via `fail-under`. Inputs are passed through environment variables (no shell interpolation), and the installed package version is pinned. Docs: [docs/github-action.md](docs/github-action.md).
 - CI dogfoods the action on every push.
+- Vercel deployment config for the optional web layer (`vercel.json`, root `requirements.txt`, `[tool.vercel] entrypoint`). Deployment-only: scoring, checks, report schemas, CLI contracts, the GitHub Action and the published `repopulse-cli` package are unchanged.
+
+### Fixed
+
+- Web dashboard keeps the last successful repository selected when a later scan fails, so compare and the on-screen report stay aligned.
+- Compare form error tells humans to scan a repository first (no tool-name jargon). Whitespace-only compare refs are rejected.
+- Compare-before-scan now shows the error in the page instead of failing silently.
+- In-flight scan/compare results are discarded when a newer request has already changed the selected repository.
+- URL-derived refs use the same 256-character limit as body refs.
+- Partial WebMCP tool registration is aborted if any `registerTool` call fails.
+- The web adapter reuses the privacy-check repository payload so scan/compare do not call `get_repo` twice.
+- Private repositories now return the same `404 repository_not_found` as inaccessible ones instead of a distinct `403 private_repository_not_supported`. The old response let an anonymous caller probe which private repository names a deployment's `GITHUB_TOKEN` could read.
 
 ## 0.3.6 - 2026-08-07
 

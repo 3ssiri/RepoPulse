@@ -124,6 +124,7 @@ Private repos: pass `--token` or set `GITHUB_TOKEN`. Details: [USAGE.md](USAGE.m
 - `--format issues` — paste-ready Markdown for fail/warn checks.
 - `repopulse create-issues` — open real GitHub issues (`--dry-run` or `--yes`).
 - **GitHub Action** — health check in CI with the report in the run summary (see below).
+- **Web app + WebMCP** — optional FastAPI layer (from a source checkout: `pip install -e ".[web]"`, then `uvicorn webapp.app:app`) serving a one-page dashboard and four read-only WebMCP tools (`scan_repository`, `get_attention_items`, `get_check_details`, `compare_refs`) so humans and agents share the same state. Details: [docs/webmcp-challenge.md](docs/webmcp-challenge.md).
 - Optional config `.repopulse.yml` with profiles: `strict`, `library`, `docs`, `release`.
 
 ## GitHub Action

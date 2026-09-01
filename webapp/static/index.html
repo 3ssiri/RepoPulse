@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RepoPulse — Repository health for humans and agents</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>RepoPulse</h1>
+    <p class="subtitle">Repository health for humans and agents.</p>
+    <span id="webmcp-badge" class="badge badge-off">WebMCP Unavailable</span>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="scan-heading">
+      <h2 id="scan-heading">Scan a repository</h2>
+      <form id="scan-form">
+        <label for="repository-url">Repository URL</label>
+        <input id="repository-url" name="repository_url" type="url" required
+               maxlength="512" placeholder="https://github.com/owner/repo">
+        <label for="ref">Ref <span class="muted">(optional branch, tag, or commit)</span></label>
+        <input id="ref" name="ref" type="text" maxlength="256" placeholder="main">
+        <button id="scan-button" type="submit">Scan</button>
+      </form>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+    <p id="error" class="error" role="alert" hidden></p>
+
+    <section id="report-section" class="card" aria-labelledby="report-heading" hidden>
+      <h2 id="report-heading">Report</h2>
+      <div class="report-summary">
+        <strong id="report-repo"></strong>
+        <span id="report-score"></span>
+        <span id="report-grade" class="badge"></span>
+      </div>
+      <p id="report-truncated" class="warning" hidden>
+        Warning: the repository tree was truncated by the GitHub API, so this
+        report may be based on an incomplete file listing.
+      </p>
+      <h3>Checks</h3>
+      <ul id="checks-list" class="checks"></ul>
+      <h3>Recommendations</h3>
+      <ul id="recommendations-list"></ul>
+    </section>
+
+    <section id="attention-section" class="card" aria-labelledby="attention-heading" hidden>
+      <h2 id="attention-heading">Attention items</h2>
+      <ul id="attention-list" class="checks"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="compare-heading">
+      <h2 id="compare-heading">Compare refs</h2>
+      <form id="compare-form">
+        <label for="baseline-ref">Baseline ref</label>
+        <input id="baseline-ref" name="baseline_ref" type="text" required maxlength="256" placeholder="v0.3.5">
+        <label for="target-ref">Target ref</label>
+        <input id="target-ref" name="target_ref" type="text" required maxlength="256" placeholder="v0.3.6">
+        <button id="compare-button" type="submit">Compare</button>
+      </form>
+      <div id="comparison-result" hidden>
+        <p id="comparison-delta"></p>
+        <div class="comparison-columns">
+          <div>
+            <h3>Improved</h3>
+            <ul id="improved-list"></ul>
+          </div>
+          <div>
+            <h3>Regressed</h3>
+            <ul id="regressed-list"></ul>
+          </div>
+          <div>
+            <h3>Unchanged</h3>
+            <ul id="unchanged-list"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a href="https://github.com/3ssiri/RepoPulse">GitHub repository</a>
+    <span>·</span>
+    <span>WebMCP Challenge</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

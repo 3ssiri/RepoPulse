@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "fluid": true,
+  "buildCommand": "uv pip install --python .vercel/python/.venv/bin/python -r requirements.txt",
+  "functions": {
+    "webapp/app.py": {
+      "maxDuration": 60
+    }
+  }
+}

@@ -1,0 +1,9 @@
+# Runtime dependencies of the optional web layer (webapp/), installed by the
+# Vercel buildCommand in vercel.json. Vercel's Python runtime installs only
+# [project].dependencies from pyproject.toml, and FastAPI must not become a
+# dependency of the published `repopulse-cli` package -- so the web-only
+# requirements live here. Keep in sync with the `web` extra in pyproject.toml.
+fastapi>=0.135.0
+pydantic>=2.13.4
+requests>=2.34.2
+PyYAML>=6.0.3
