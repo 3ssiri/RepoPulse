@@ -451,10 +451,20 @@ function registerWebMCPTools() {
     },
   ];
 
-  Promise.all(
-    tools.map((tool) =>
-      document.modelContext.registerTool(tool, { signal: registration.signal }))
-  ).then(() => {
+  let registrations;
+  try {
+    registrations = tools.map((tool) =>
+      Promise.resolve(
+        document.modelContext.registerTool(tool, { signal: registration.signal })
+      ));
+  } catch (_error) {
+    registration.abort();
+    state.webmcpAvailable = false;
+    renderWebMCPStatus();
+    return;
+  }
+
+  Promise.all(registrations).then(() => {
     state.webmcpAvailable = true;
     renderWebMCPStatus();
   }).catch(() => {
