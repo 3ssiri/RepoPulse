@@ -1,14 +1,34 @@
-# RepoPulse WebMCP Demo — Remotion Execution Runbook
+# RepoPulse WebMCP Demo — Execution Runbook
 
 Decision date: 2026-09-01
 
-This is the execution playbook for producing the final OpenAI WebMCP Challenge video with **Remotion + Codex/Claude Code**, using the user's existing TTS options (Grok, local TTS models, or Gemini) and without purchasing another video/TTS service.
+This is the executable playbook for producing the final OpenAI WebMCP Challenge video with **no additional paid service**.
+
+Primary path:
+
+```text
+Native ChatGPT WebMCP capture
+        ↓
+authentic raw screen recording
+        ↓
+Gemini Agentic Video Understanding
+        ↓
+structured `video-demo/timeline.json`
+        ↓
+Grok / local TTS / Gemini narration assets
+        ↓
+Remotion + Codex or Claude Code
+        ↓
+1080p MP4 (<3:00, target ≈2:10)
+```
+
+For interruption recovery and model/tool switching, read `docs/demo-video-handoff.md` and `docs/demo-video-state.md` first.
 
 ## Safety boundary
 
-Do **not** build the Remotion project directly on `main` while the production submission is stable.
+Do **not** build video-production code directly on the stable submission branch unless intentionally documenting it.
 
-Preferred setup:
+Preferred local setup:
 
 ```bash
 git fetch origin
@@ -16,60 +36,138 @@ git worktree add ../RepoPulse-demo -b chore/demo-video main
 cd ../RepoPulse-demo
 ```
 
-Create the video project inside this worktree. Do not merge it into `main` before submission unless there is a specific reason. This prevents video-production dependencies or assets from triggering unnecessary Vercel changes.
+Raw recordings, generated audio, and rendered output remain local. The production application, Python package, Vercel configuration, and WebMCP behavior must not be changed for video production.
 
-Large recordings and generated audio should remain local and should not be committed.
+The authentic raw recording is the only source of ChatGPT, WebMCP, and RepoPulse screens. Gemini and Remotion may analyze, trim, zoom, caption, narrate, or hold real footage, but may not regenerate or replace those screens.
 
-## What the human must record
+## Phase 1 — capture authentic evidence
 
-Record one truthful native ChatGPT WebMCP session with extra breathing room around every action. It can be longer than the final 2:10 video; Remotion will remove the waiting.
+Record one truthful native ChatGPT Site Tools session with extra breathing room around every action.
 
-Record this exact sequence:
+Required sequence:
 
 1. ChatGPT and RepoPulse visible, preferably side by side.
 2. WebMCP `scan_repository` on `https://github.com/torvalds/linux`.
-3. Keep the completed `69/100`, `Fair`, `scan_truncated: true` result visible for several seconds.
+3. Keep `69/100`, `Fair`, `scan_truncated: true` visible.
 4. WebMCP `get_attention_items` without another scan.
-5. Keep the returned order visible: FAIL `github_actions`, then WARN `gitignore`, `tests`, `dependencies`, `security`.
+5. Keep FAIL `github_actions` followed by WARN `gitignore`, `tests`, `dependencies`, `security` visible.
 6. WebMCP `get_check_details` for `github_actions`.
 7. In the human RepoPulse UI, manually scan `https://github.com/3ssiri/RepoPulse`.
-8. Keep the completed `100/100`, `Excellent` dashboard visible.
-9. From ChatGPT, call WebMCP `compare_refs` using `v0.3.5` and `v0.3.6` without supplying the repository URL again.
-10. Keep the comparison `100/100 → 100/100`, delta `0` visible.
+8. Keep `100/100`, `Excellent` visible.
+9. From ChatGPT call WebMCP `compare_refs` with `v0.3.5` and `v0.3.6` without supplying the repository URL again.
+10. Keep `100/100 → 100/100`, delta `0` visible.
 11. End on the live WebMCP-enabled RepoPulse page.
 
-Recording recommendations:
+Recording guidance:
 
 - 1920×1080 or higher
 - 16:9
-- 30 fps is sufficient
+- 30fps is sufficient
+- silent capture is fine
 - no intro/title card
 - no login/setup footage
-- hide unrelated tabs, notifications and sensitive desktop content
-- leave 2–4 seconds before and after important state changes; cuts will remove excess time later
-- do not worry about narration during capture; silent capture is fine
+- hide unrelated tabs, notifications, credentials, and private desktop content
+- leave 2–4 seconds before/after important state changes
 
-Save the untouched recording as:
+Save the untouched recording locally as:
 
 ```text
 video-demo/public/raw-webmcp-demo.mp4
 ```
 
-Keep another untouched backup outside the project.
+Also keep an untouched backup outside the demo project.
 
-## Generate narration with existing TTS
+### P1 DONE when
 
-Do not use `edge-tts` and do not purchase another TTS provider.
+- raw MP4 exists
+- all required evidence beats are visibly present
+- backup exists
+- no sensitive data is visible
 
-Use one of:
+If an evidence beat is missing, rerecord before post-production.
+
+## Phase 2 — Gemini Agentic Video Understanding
+
+Use Gemini to identify exact evidence moments and cut boundaries before Remotion editing.
+
+Preferred model:
+
+```text
+gemini-3.7-flash
+```
+
+Use agentic video processing:
+
+```json
+{
+  "type": "video",
+  "uri": "<uploaded-video-uri>",
+  "processing": "agentic"
+}
+```
+
+Fallback: Gemini 3.6 Flash with agentic processing.
+
+Gemini's job is **analysis only**. It must never generate replacement product footage.
+
+Input:
+
+- `raw-webmcp-demo.mp4`
+- approved story in `docs/devpost-submission.md`
+- schema in `docs/demo-timeline.schema.json`
+
+Required output:
+
+```text
+video-demo/timeline.json
+```
+
+Use the exact Gemini prompt from `docs/demo-video-handoff.md`.
+
+Gemini must locate:
+
+1. `scan_repository` execution
+2. Linux 69/100 result visible
+3. `get_attention_items` execution
+4. FAIL-before-WARN result visible
+5. `get_check_details(github_actions)` execution/result
+6. human RepoPulse repository switch
+7. RepoPulse 100/100 result
+8. `compare_refs(v0.3.5, v0.3.6)` execution without repository reselection
+9. delta-0 comparison visible
+10. final live product state
+
+The generated JSON must match `docs/demo-timeline.schema.json` and include source start/end, action/result timestamps, evidence text, confidence, safe-cut flag, and dead ranges to cut/speed up.
+
+If Gemini cannot verify a required scene, set `status: "NEEDS_RERECORD"`; do not infer it.
+
+### P2 DONE when
+
+- Gemini agentic analysis actually ran on the raw video
+- `video-demo/timeline.json` exists
+- JSON validates against the schema
+- every required evidence beat is `FOUND` or explicitly `NEEDS_RERECORD`
+- no generated UI is used
+
+## Phase 3 — narration with existing TTS
+
+Do not buy another TTS service and do not use `edge-tts`.
+
+Candidates already available:
 
 1. Grok voice/TTS
-2. a local TTS model already available on the machine
+2. existing local TTS model(s)
 3. Gemini TTS/audio generation
 
-First generate the same 10–15 second sample in the candidate voices. Pick the voice with the clearest professional English and the most predictable pacing.
+Generate the same 10–15 second sample with candidate voices and choose by:
 
-Then generate **one file per scene**, not one long file:
+- English clarity
+- neutral professional delivery
+- natural cadence
+- stable/predictable duration
+- clean audio
+
+Then generate one file per scene:
 
 ```text
 video-demo/public/audio/
@@ -82,13 +180,17 @@ video-demo/public/audio/
   07-close.wav
 ```
 
-WAV is preferred during editing when available; high-quality MP3 is acceptable.
+Use exact approved narration from `docs/devpost-submission.md` unless deliberately revised first.
 
-Use the exact narration text from `docs/devpost-submission.md` unless deliberately revised first.
+### P3 DONE when
 
-## Create the Remotion project
+- one voice was selected by an actual sample comparison
+- all seven narration files exist
+- wording matches approved script
 
-Inside the `RepoPulse-demo` worktree:
+## Phase 4 — create the Remotion project
+
+Inside the demo worktree:
 
 ```bash
 npx create-video@latest --yes --blank --no-tailwind video-demo
@@ -97,29 +199,13 @@ npm i
 npx remotion add @remotion/media
 ```
 
-Remotion's current agent guidance recommends assets in `public/`, media through `@remotion/media`, preview through `npx remotion studio --no-open`, and rendering through `npx remotion render`.
-
-Do not add web-app dependencies to the root RepoPulse Python project.
-
-## Local-only asset rules
-
-Add these patterns to the video project's `.gitignore`:
-
-```gitignore
-public/raw-webmcp-demo.mp4
-public/audio/*.wav
-public/audio/*.mp3
-out/
-```
-
-The production recipe/code may be versioned on `chore/demo-video`, but the raw desktop recording and generated narration do not need to be pushed to GitHub.
-
-## Recommended project structure
+Recommended structure:
 
 ```text
 video-demo/
   package.json
   remotion.config.ts
+  timeline.json
   src/
     Root.tsx
     RepoPulseDemo.tsx
@@ -141,9 +227,7 @@ video-demo/
   out/
 ```
 
-## Composition specification
-
-Create one composition:
+Composition:
 
 ```text
 id: RepoPulseWebMCPDemo
@@ -152,68 +236,56 @@ height: 1080
 fps: 30
 ```
 
-Initial target duration: 130 seconds / 3900 frames.
+The source-video edit plan comes from `timeline.json`; narration duration determines final pacing.
 
-The final duration should be calculated from the real scene durations and narration, and must remain under 180 seconds.
+## Phase 5 — Remotion editing model
 
-## Scene manifest
+Codex is the preferred implementation agent; Claude Code/Cowork is the first fallback. Grok/Antigravity may continue the same project only if they can access the same repository/worktree and run Node/Remotion/FFmpeg commands.
 
-Use a single typed manifest as the source of truth for timing. Initial targets:
+Before editing, the agent must read:
 
-```ts
-export const scenes = [
-  {id: 'scan', from: 0, duration: 15, audio: 'audio/01-scan.wav'},
-  {id: 'attention', from: 15, duration: 20, audio: 'audio/02-attention.wav'},
-  {id: 'details', from: 35, duration: 15, audio: 'audio/03-details.wav'},
-  {id: 'human-state', from: 50, duration: 20, audio: 'audio/04-human-state.wav'},
-  {id: 'compare', from: 70, duration: 20, audio: 'audio/05-compare.wav'},
-  {id: 'implementation', from: 90, duration: 25, audio: 'audio/06-implementation.wav'},
-  {id: 'close', from: 115, duration: 15, audio: 'audio/07-close.wav'},
-] as const;
+```text
+docs/demo-video-state.md
+docs/demo-video-handoff.md
+docs/demo-remotion-runbook.md
+docs/devpost-submission.md
+video-demo/timeline.json
 ```
 
-These are starting targets only. The agent should measure each narration file and adjust the visual segment to the real audio duration.
+Use non-destructive source trims. For each scene define:
 
-## Editing model
-
-Do not physically rewrite the source screen recording unless necessary. Use Remotion to build a virtual edit from the raw recording.
-
-For each scene define:
-
-- source video trim start
-- source video trim end
+- source trim start/end from `timeline.json`
 - output scene start
-- narration audio
-- optional playback-rate for a waiting interval
-- optional zoom rectangle / scale
-- optional overlay text
+- narration asset
+- optional hold range
+- optional dead range removal or speed-up
+- optional crop/zoom
+- optional approved overlay
 
-Use `<Video>` and `<Audio>` from `@remotion/media`, `staticFile()` for local assets, and Remotion frame-based timing. Use `trimBefore`/`durationInFrames` or `<Sequence>` for non-destructive cuts.
+Use `<Video>` and `<Audio>` from `@remotion/media`, `staticFile()` for local assets, and frame-based timing with `useCurrentFrame()`, `interpolate()`, or `spring()`.
 
-Animations must be frame-driven (`useCurrentFrame()`, `interpolate()`, `spring()`), not CSS transitions/animations.
+Do not use CSS transitions/animations for rendered timing.
 
-## Visual treatment
+Allowed visual treatment:
 
-Keep styling restrained and evidence-first.
+- hard cuts over waiting
+- modest speed-up only on unimportant waiting
+- hold on completed real results
+- 1.08×–1.22× restrained zooms on Site Tool actions/results
+- 1.08×–1.18× dashboard zooms on score/comparison changes
+- short approved overlays
+- optional captions if they do not obscure evidence
 
-Allowed:
-
-- hard cuts over loading
-- short crossfade only when it does not hide state changes
-- 1.08×–1.22× zooms on the active ChatGPT Site Tool call/result
-- 1.08×–1.18× zoom on RepoPulse score/comparison when it changes
-- short overlay labels
-- optional captions in safe lower-third space
-
-Do not use:
+Forbidden:
 
 - title card
 - AI avatar
-- synthetic/recreated application screens
-- decorative transitions that obscure the real interface
-- fake mouse/tool activity
+- generated/recreated application screens
+- fake cursor activity
+- decorative filler
+- background music
 
-Approved overlay labels:
+Approved overlays:
 
 ```text
 WebMCP action → same visible dashboard
@@ -222,46 +294,51 @@ Human action → shared agent state
 One product · one state · human + agent
 ```
 
-## Synchronization strategy
+### Synchronization rule
 
-The audio is the pacing source of truth after the factual screen capture.
+The factual raw footage is the evidence source; narration is the pacing source.
 
 For each scene:
 
 1. measure narration duration
-2. identify the exact raw-video range containing the required action/result
-3. remove dead waiting before/after the result
-4. if the useful visual action is shorter than the narration, hold on the completed real result instead of inventing footage
-5. if the raw interaction is slightly longer than narration, speed only unimportant waiting portions; keep actual clicks/tool calls/results at natural speed
-6. align the key visible state change within the sentence that describes it
+2. take the exact raw range from `timeline.json`
+3. remove dead waits
+4. align the state change with the sentence describing it
+5. hold on the completed real result if narration is longer
+6. speed only non-evidence waiting if the raw scene is slightly long
+7. regenerate one TTS scene or adjust trim rather than distorting narration heavily
 
-Do not stretch or speed the synthetic narration just to fit a bad visual cut unless the adjustment is very small. Regenerate that scene's TTS or change its source-video trim instead.
+### P4 DONE when
 
-## Preview loop
+- composition opens in Remotion Studio
+- all seven scenes use real raw footage ranges
+- narration is synchronized
+- approved zooms/labels are implemented
+- no scene relies on synthetic UI
 
-Start Remotion Studio:
+## Preview
 
 ```bash
 npx remotion studio --no-open
 ```
 
-If running through Codex and the watcher hits an `EMFILE` limit:
+If Codex hits a file-watcher limit:
 
 ```bash
 npx remotion studio --no-open --webpack-poll 1000
 ```
 
-Review these points first:
+Review first:
 
-- first 15 seconds: WebMCP action and dashboard update are immediately understandable
-- attention scene: FAIL-before-WARN order is readable
-- human-state scene: it is obvious the human selected RepoPulse manually
-- compare scene: the agent uses the currently selected repository and the same dashboard updates
-- ending: final claim matches what is visibly on screen
+- first 15 seconds immediately show native WebMCP value
+- attention order is readable
+- human repository switch is unmistakable
+- compare uses the current human-selected repository
+- ending claim matches the visible product
 
-## Render
+## Phase 5 — final render
 
-After the preview is approved:
+After preview approval:
 
 ```bash
 npx remotion render RepoPulseWebMCPDemo out/repopulse-webmcp-demo.mp4
@@ -271,84 +348,39 @@ Verify:
 
 - 1920×1080
 - 16:9
-- audio present and clean
-- duration < 3:00
-- target ≈ 2:10
+- clean audio
+- duration <180s, target ≈130s
 - no clipped UI/text
-- no private notifications or secrets
-- all WebMCP claims correspond to real visible actions
+- no private notifications/secrets
+- every WebMCP claim maps to a real visible action
+- shared state is understandable with audio muted
 
-## Exact Codex / Claude Code handoff prompt
+### P5 DONE when
 
-Use the following instruction in the coding agent after the raw video and scene audio files are present:
+All checks above pass on the rendered MP4.
 
-```text
-Work in the RepoPulse demo worktree only. Do not modify the production web app, Python package, Vercel configuration, or main branch.
+## Phase 6 — submission
 
-Build a small Remotion project in `video-demo/` for the OpenAI WebMCP Challenge demo.
+1. watch final MP4 with audio
+2. watch it muted
+3. upload publicly to YouTube
+4. add YouTube URL to Devpost
+5. recheck live URL, testing instructions, repo, MIT license, description, team fields
 
-Source of truth:
-- `docs/devpost-submission.md` for the approved narration/story.
-- `docs/demo-remotion-runbook.md` for the production rules.
-- `video-demo/public/raw-webmcp-demo.mp4` is the authentic native ChatGPT WebMCP screen recording. Never recreate or replace its application screens.
-- narration assets are in `video-demo/public/audio/`.
+## Interruption / quota recovery
 
-Requirements:
-1. Scaffold/use a blank Remotion project with no Tailwind.
-2. Use 1920x1080, 30fps, composition id `RepoPulseWebMCPDemo`.
-3. Use `@remotion/media` Video/Audio and non-destructive trims of the raw recording.
-4. Implement the seven approved scenes using one typed timing manifest.
-5. Measure the real narration durations and make them the pacing source of truth.
-6. Cut network waits aggressively while preserving all real tool calls/results.
-7. Add restrained frame-driven zooms around WebMCP actions and RepoPulse state changes.
-8. Add only the approved short overlay labels.
-9. No title card, avatar, fabricated UI, fake cursor activity, decorative filler, or background music.
-10. Keep raw recording/audio/output files ignored by Git.
-11. Start `npx remotion studio --no-open` and inspect the composition.
-12. Fix timing/readability issues iteratively, changing timing constants rather than overcomplicating the component structure.
-13. Render `out/repopulse-webmcp-demo.mp4` only after the preview is coherent.
-14. Verify the final video is under 3 minutes, ideally around 2:10, and report exact duration plus any assumptions/cuts made.
+Do not depend on chat memory.
 
-Do not claim a scene is verified unless it is actually visible in the source recording. If an expected action is missing from the recording, stop editing that scene and report exactly which source footage needs to be rerecorded.
-```
+Every agent must:
 
-## Division of labor
+1. read `docs/demo-video-state.md`
+2. read `docs/demo-video-handoff.md`
+3. inspect Git/worktree state
+4. continue only the next incomplete phase
+5. update the state file before ending or switching tools
 
-### Human
+If a model hits quota, preserve files and move to the next fallback. Never reset or regenerate completed work only because the previous model is unavailable.
 
-Only needs to:
+## Exact implementation handoff
 
-1. capture the authentic WebMCP session
-2. choose the preferred Grok/local/Gemini voice
-3. generate or provide the seven narration files
-4. approve the preview/final render
-
-### Codex / Claude Code
-
-Should handle:
-
-- project scaffolding
-- media ingestion
-- source-video trims
-- timeline timing
-- audio synchronization
-- zooms/overlays
-- render commands
-- technical validation
-- iteration
-
-## Final execution order
-
-```text
-1. Capture real WebMCP footage
-2. Generate 7 TTS scene files (Grok/local/Gemini)
-3. Create RepoPulse-demo worktree
-4. Run the handoff prompt in Codex or Claude Code
-5. Agent builds Remotion composition
-6. Preview in Remotion Studio
-7. Adjust timing constants
-8. Render 1080p MP4
-9. Watch once with audio and once muted
-10. Upload publicly to YouTube
-11. Put YouTube link into Devpost
-```
+Use the resume prompt in `docs/demo-video-handoff.md`. It is intentionally tool-neutral so Codex, Claude Code/Cowork, Grok, or another capable coding agent can continue the same Remotion project without historical chat context.
