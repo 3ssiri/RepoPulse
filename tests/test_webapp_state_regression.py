@@ -1,7 +1,8 @@
 """Regression coverage for RepoPulse Web shared-state request ordering.
 
 These tests intentionally keep the frontend dependency-free: they verify the
-small staleness contract in app.js without introducing a JavaScript test stack.
+small staleness and registration contracts in app.js without introducing a
+JavaScript test stack.
 """
 
 from pathlib import Path
@@ -53,3 +54,23 @@ def test_newer_request_still_supersedes_older_scan_and_compare():
 
     assert "started.generation !== requestGeneration" in scan
     assert "started.generation !== requestGeneration" in compare
+
+
+def test_webmcp_sync_registration_failure_is_handled_before_promise_all():
+    """A synchronous registerTool throw must abort partial registrations cleanly."""
+    source = _source()
+    registration = source.split("function registerWebMCPTools", 1)[1].split(
+        "function main", 1
+    )[0]
+    before_promise = registration.split("Promise.all(registrations)", 1)[0]
+
+    assert "let registrations;" in before_promise
+    assert "try {" in before_promise
+    assert "registrations = tools.map" in before_promise
+    assert "Promise.resolve(" in before_promise
+
+    sync_catch = before_promise.split("} catch", 1)[1]
+    assert "registration.abort()" in sync_catch
+    assert "state.webmcpAvailable = false" in sync_catch
+    assert "renderWebMCPStatus()" in sync_catch
+    assert "return;" in sync_catch
