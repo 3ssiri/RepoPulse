@@ -19,12 +19,10 @@ const state = {
 let requestGeneration = 0;
 let activeController = null;
 
-function isStaleRequest(startedGeneration) {
-  return startedGeneration !== requestGeneration;
-}
-
-function isStaleComparison(startedGeneration, startedUrl) {
-  return isStaleRequest(startedGeneration) || startedUrl !== state.repositoryUrl;
+function isStaleResult(startedGeneration, currentGeneration, startedUrl, currentUrl) {
+  if (startedGeneration !== currentGeneration) return true;
+  if (startedUrl === null || currentUrl === null) return false;
+  return currentUrl !== "" && startedUrl !== currentUrl;
 }
 
 function beginRequest() {
@@ -113,7 +111,9 @@ async function scanRepository(repositoryUrl, ref, signal) {
       signal: started.controller.signal,
     });
     const report = await parseApiResponse(response);
-    if (isStaleRequest(started.generation)) {
+    // A fresh scan is allowed to select a different repository; only a newer
+    // request generation makes this scan stale.
+    if (isStaleResult(started.generation, requestGeneration, null, null)) {
       const error = new Error("Request superseded.");
       error.name = "AbortError";
       throw error;
@@ -165,7 +165,10 @@ async function compareRefs(baselineRef, targetRef, signal) {
       signal: started.controller.signal,
     });
     const comparison = await parseApiResponse(response);
-    if (isStaleComparison(started.generation, startedUrl)) {
+    // Comparisons are pinned to the repository selected when they started.
+    if (isStaleResult(
+      started.generation, requestGeneration, startedUrl, state.repositoryUrl
+    )) {
       const error = new Error("Request superseded.");
       error.name = "AbortError";
       throw error;
