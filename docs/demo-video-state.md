@@ -6,28 +6,27 @@ This file is the single resumable checkpoint for demo-video production. Update i
 
 ## Current phase
 
-`P0 — documentation`
+`P1 — authentic capture`
 
-Status: `IN_PROGRESS`
+Status: `NOT_STARTED`
 
 ## Completed
 
-- RepoPulse WebMCP production behavior verified in ChatGPT native Site Tools.
-- Final product verdict: READY FOR SUBMISSION.
-- Devpost description and approved ~2:10 story exist in `docs/devpost-submission.md`.
-- Zero-additional-cost production decision: Remotion + coding agent, existing Grok/local/Gemini TTS only.
-- Multi-agent handoff protocol created in `docs/demo-video-handoff.md`.
-
-## In progress
-
-- Move production architecture to:
+### P0 — documentation and resilient handoff
+- [x] RepoPulse WebMCP production behavior verified in ChatGPT native Site Tools.
+- [x] Final product verdict: READY FOR SUBMISSION.
+- [x] Devpost description and approved ~2:10 story exist in `docs/devpost-submission.md`.
+- [x] Zero-additional-cost architecture documented as:
   `native capture → Gemini agentic video analysis → timeline.json → narration → Remotion → final MP4`.
-- Add/verify tracked timeline schema and local media ignore rules.
+- [x] Multi-agent handoff protocol exists in `docs/demo-video-handoff.md`.
+- [x] Execution runbook updated in `docs/demo-remotion-runbook.md`.
+- [x] `docs/demo-timeline.schema.json` exists for Gemini structured edit-plan output.
+- [x] `.gitignore` excludes raw capture, narration audio, and rendered output while leaving `video-demo/timeline.json` trackable.
 
 ## Not started
 
 ### P1 — authentic capture
-- [ ] Record `raw-webmcp-demo.mp4` from real ChatGPT Site Tools execution.
+- [ ] Record `video-demo/public/raw-webmcp-demo.mp4` from real ChatGPT Site Tools execution.
 - [ ] Verify all required evidence beats are present.
 - [ ] Save an untouched backup outside the video project.
 
@@ -65,9 +64,9 @@ None currently documented.
 
 ## Next single action
 
-**Capture the authentic native ChatGPT WebMCP session as `raw-webmcp-demo.mp4`.**
+**Capture the authentic native ChatGPT WebMCP session as `video-demo/public/raw-webmcp-demo.mp4`.**
 
-Do not generate narration or build the final Remotion timeline before the raw evidence recording exists.
+Do not generate final narration or build the Remotion edit before the raw evidence recording exists.
 
 ## Required capture sequence
 
@@ -84,4 +83,4 @@ Do not generate narration or build the final Remotion timeline before the raw ev
 
 ## Last verification performed
 
-Documentation-level only. No new recording, Gemini analysis, narration generation, Remotion preview, or render has been completed in this state file yet.
+Documentation/handoff foundation verified on GitHub. No new raw recording, Gemini analysis, narration generation, Remotion preview, or render has been completed yet.
