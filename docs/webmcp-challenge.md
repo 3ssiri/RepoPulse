@@ -38,6 +38,34 @@ Open http://127.0.0.1:8000. Optional: set `GITHUB_TOKEN` in the server
 environment to raise GitHub rate limits. The token is server-side only —
 it never appears in HTML, JS, responses, or error messages.
 
+## Deployment (Vercel)
+
+The same FastAPI app is deployed unchanged; nothing is rebuilt for hosting.
+
+| File | Why |
+|---|---|
+| `pyproject.toml` → `[tool.vercel] entrypoint` | `webapp/app.py` is outside Vercel's auto-detected entrypoint locations. setuptools ignores `[tool.vercel]`, so the sdist and wheel are unaffected. |
+| `vercel.json` → `fluid: true` | Fluid compute, to keep demo latency down between requests. |
+| `vercel.json` → `functions."webapp/app.py".maxDuration: 60` | A scan makes several sequential GitHub API calls (repo, tree, then README / .gitignore / package.json / pyproject.toml / each workflow), so it can outlast a short default timeout. |
+| `vercel.json` → `buildCommand` | Installs `requirements.txt` into the function environment. |
+| `requirements.txt` | The web layer's runtime imports only. Keep in sync with the `web` extra. |
+
+Why the web dependencies are not in `pyproject.toml`: Vercel's Python runtime
+installs **only** `[project].dependencies`. `[project.optional-dependencies]`,
+PEP 735 `[dependency-groups]` and a bare `requirements.txt` are all ignored —
+verified with a probe deployment. Putting FastAPI in `[project].dependencies`
+would make every `pip install repopulse-cli` pull FastAPI, so the web-only
+requirements are installed by `buildCommand` instead, which runs after the
+framework install and before the function bundle is assembled.
+
+`GITHUB_TOKEN` is not set on the deployment: the demo runs against GitHub's
+unauthenticated rate limit. If that becomes the bottleneck, add it as a Vercel
+environment variable — never in `vercel.json`, the repository, or the frontend.
+
+The Vercel project's production branch is `main`, so a push to a feature
+branch produces a preview deployment; production follows once the branch is
+merged.
+
 ## API
 
 | Endpoint | Body | Response |

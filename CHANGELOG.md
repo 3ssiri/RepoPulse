@@ -7,6 +7,7 @@
 - **Optional web app + WebMCP** (`webapp/`, extra `web`): one-page dashboard over the existing scan/compare engine, plus four read-only tools (`scan_repository`, `get_attention_items`, `get_check_details`, `compare_refs`) so a human and an agent share the same page state. Public github.com repositories only; `GITHUB_TOKEN` is server-side. Not packaged in `repopulse-cli`. Docs: [docs/webmcp-challenge.md](docs/webmcp-challenge.md).
 - **GitHub Action** (`action.yml` at the repository root): run a health check in CI with `uses: 3ssiri/RepoPulse@v1`. Writes the Markdown report to the workflow run summary, exposes `score` / `max-score` / `percentage` / `grade` / `truncated` / report paths as outputs, and optionally fails the build via `fail-under`. Inputs are passed through environment variables (no shell interpolation), and the installed package version is pinned. Docs: [docs/github-action.md](docs/github-action.md).
 - CI dogfoods the action on every push.
+- Vercel deployment config for the optional web layer (`vercel.json`, root `requirements.txt`, `[tool.vercel] entrypoint`). Deployment-only: scoring, checks, report schemas, CLI contracts, the GitHub Action and the published `repopulse-cli` package are unchanged.
 
 ### Fixed
 
