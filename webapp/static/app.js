@@ -20,9 +20,8 @@ let requestGeneration = 0;
 let activeController = null;
 
 function isStaleResult(startedGeneration, currentGeneration, startedUrl, currentUrl) {
-  if (startedGeneration !== currentGeneration) return true;
-  if (startedUrl === null || currentUrl === null) return false;
-  return currentUrl !== "" && startedUrl !== currentUrl;
+  return startedGeneration !== currentGeneration ||
+    (startedUrl !== null && currentUrl !== null && currentUrl !== "" && startedUrl !== currentUrl);
 }
 
 function beginRequest() {
