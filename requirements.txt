@@ -1,0 +1,8 @@
+# Runtime dependencies for the optional web layer (webapp/) only.
+# The PyPI distribution `repopulse-cli` is defined by pyproject.toml and is
+# unaffected by this file; Vercel's Python runtime reads it to build the
+# FastAPI function. Keep in sync with the `web` extra in pyproject.toml.
+fastapi>=0.135.0
+pydantic>=2.13.4
+requests>=2.34.2
+PyYAML>=6.0.3

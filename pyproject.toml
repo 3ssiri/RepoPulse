@@ -69,6 +69,12 @@ include = ["repopulse*"]
 # FURB162: fromisoformat still needs Z->offset on Python 3.11.
 ignore = ["B008", "FURB162"]
 
+# Vercel deploys webapp/app.py (the optional web layer). This table is read
+# only by Vercel's Python runtime; setuptools and the PyPI distribution
+# ignore it.
+[tool.vercel]
+entrypoint = "webapp.app:app"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
