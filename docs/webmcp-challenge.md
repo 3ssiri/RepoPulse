@@ -148,16 +148,31 @@ scan/compare results, Compare-before-Scan UI errors, and partial WebMCP
 registration abort. All network and core calls are mocked — tests never
 touch real GitHub.
 
+### Production WebMCP verification — 2026-09-01
+
+The live production deployment was exercised through ChatGPT's in-app browser
+using native WebMCP Site Tools, not direct API calls or DOM automation as an
+agent substitute.
+
+| Verification | Result | Evidence |
+|---|---|---|
+| Site-tool discovery | PASS | Exactly four tools: `scan_repository`, `get_attention_items`, `get_check_details`, `compare_refs`. |
+| RepoPulse scan | PASS | `3ssiri/RepoPulse`, `100/100`, `Excellent`, `scan_truncated: false`; the visible dashboard updated to the same result. |
+| Current-state attention read | PASS | `get_attention_items` read the loaded report without another repository scan. |
+| Valid check details | PASS | `get_check_details(readme)` returned README Quality, `20/20`, status `pass`. |
+| Unknown-key recovery | PASS | An invalid key returned `Unknown check key` and 11 `available_keys`. |
+| Production ref comparison | PASS | `v0.3.5` and `v0.3.6` both scored 100; delta 0; the same dashboard displayed the comparison. |
+| Human → agent shared state | PASS | A human UI scan selected `psf/requests` (`97/100`); a WebMCP `scan_repository` then restored the same visible UI to `3ssiri/RepoPulse` (`100/100`). |
+| FAIL-before-WARN ordering | PASS | On `torvalds/linux` (`69/100`, Fair, `scan_truncated: true`), `get_attention_items` returned one FAIL (`github_actions`) followed by four WARN items (`gitignore`, `tests`, `dependencies`, `security`) with no rescan. |
+| Console/runtime | PASS | No browser-console warnings or errors were captured during the verification run. |
+
+Final production verification verdict: **READY FOR SUBMISSION**.
+
 ## Demo flow
 
-Using `https://github.com/3ssiri/RepoPulse` (tags `v0.3.5`/`v0.3.6` exist):
-
-1. "Scan this repository and tell me the three things that deserve the most
-   attention before a release." → `scan_repository` → `get_attention_items`
-2. "Explain the most important warning and what I should verify manually."
-   → `get_check_details`
-3. "Compare v0.3.5 with v0.3.6 and tell me whether repository health
-   regressed." → `compare_refs`
+The submission-ready narrative and recording script are maintained in
+[`devpost-submission.md`](devpost-submission.md). The demo intentionally starts
+with a live WebMCP action instead of a title card or setup sequence.
 
 ## Known limitations / future work
 
