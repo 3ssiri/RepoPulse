@@ -13,42 +13,37 @@ def _source() -> str:
     return APP_JS.read_text(encoding="utf-8")
 
 
-def _function(name: str, next_name: str) -> str:
-    source = _source()
-    return source.split(f"function {name}", 1)[1].split(f"function {next_name}", 1)[0]
-
-
 def _async_function(name: str, next_marker: str) -> str:
     source = _source()
     return source.split(f"async function {name}", 1)[1].split(next_marker, 1)[0]
 
 
 def test_fresh_scan_can_switch_from_repository_a_to_b():
-    """A fresh scan must depend only on request generation, not the old selected URL."""
-    helper = _function("isStaleRequest", "isStaleComparison")
+    """A fresh scan must ignore the previously selected repository identity."""
     scan = _async_function("scanRepository", "async function compareRefs")
 
-    assert "startedGeneration !== requestGeneration" in helper
-    assert "repositoryUrl" not in helper
-    assert "state.repositoryUrl" not in helper
-
-    stale_check = "if (isStaleRequest(started.generation))"
+    stale_check = "isStaleResult(started.generation, requestGeneration, null, null)"
     assert stale_check in scan
     assert scan.find(stale_check) < scan.find("state.repositoryUrl = repositoryUrl")
-    assert "isStaleComparison(" not in scan
 
 
 def test_late_compare_cannot_commit_after_repository_switch():
-    """A comparison is valid only while its starting repository remains selected."""
-    helper = _function("isStaleComparison", "beginRequest")
+    """A comparison remains pinned to the repository selected when it started."""
     compare = _async_function("compareRefs", "/* All GitHub-derived data")
 
-    assert "isStaleRequest(startedGeneration)" in helper
-    assert "startedUrl !== state.repositoryUrl" in helper
+    assert "startedUrl, state.repositoryUrl" in compare
+    assert "isStaleResult(" in compare
+    assert compare.find("isStaleResult(") < compare.find("state.currentComparison = comparison")
 
-    stale_check = "if (isStaleComparison(started.generation, startedUrl))"
-    assert stale_check in compare
-    assert compare.find(stale_check) < compare.find("state.currentComparison = comparison")
+
+def test_stale_helper_separates_generation_from_optional_repository_identity():
+    """Generation always matters; repository identity is checked only when supplied."""
+    source = _source()
+    helper = source.split("function isStaleResult", 1)[1].split("function beginRequest", 1)[0]
+
+    assert "startedGeneration !== currentGeneration" in helper
+    assert "startedUrl === null || currentUrl === null" in helper
+    assert "startedUrl !== currentUrl" in helper
 
 
 def test_newer_request_still_supersedes_older_scan_and_compare():
