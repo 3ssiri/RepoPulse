@@ -89,7 +89,6 @@ GitHub payloads, no tokens:
 |---|---|
 | `invalid_repository_url` | 400 |
 | `invalid_ref` | 400 |
-| `private_repository_not_supported` | 403 |
 | `repository_not_found` / `ref_not_found` | 404 |
 | `github_rate_limited` | 429 |
 | `github_unavailable` | 502 / 503 |
@@ -121,7 +120,10 @@ loading state.
 ## Security boundaries
 
 - **Public repositories only.** If a server-side token can see a private
-  repo, the repo is rejected with 403 *before* any tree/file reads.
+  repo, the repo is rejected *before* any tree/file reads. The rejection is
+  the same `404 repository_not_found` an inaccessible repository gets, so an
+  anonymous caller cannot use the API to discover which private repository
+  names the deployment's token can read.
 - **No tokens from the client.** No PAT input, no token in request bodies;
   `GITHUB_TOKEN` is read server-side only.
 - **XSS:** all GitHub-derived data renders via `textContent`/`createElement`;

@@ -271,9 +271,30 @@ def test_scan_private_repo_rejected(monkeypatch):
     monkeypatch.setattr(webapp, "build_health_report", fake_build)
     client = TestClient(webapp.app)
     response = client.post("/api/scan", json={"repository_url": VALID_URL})
-    assert response.status_code == 403
-    assert response.json()["detail"]["code"] == "private_repository_not_supported"
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "repository_not_found"
     assert called["build"] is False  # no tree/file reads happen for private repos
+
+
+def test_private_repo_is_indistinguishable_from_missing_one(monkeypatch):
+    """A private repo the token can read must not be told apart from a missing one.
+
+    Otherwise a deployment with a broadly scoped GITHUB_TOKEN lets anonymous
+    callers probe which private repository names that token can see.
+    """
+    monkeypatch.setattr(
+        webapp, "GitHubClient", lambda token=None: FakeClient(token, private=True)
+    )
+    monkeypatch.setattr(webapp, "build_health_report", lambda *a, **k: sample_report())
+    private = TestClient(webapp.app).post("/api/scan", json={"repository_url": VALID_URL})
+
+    missing = failing_client(
+        monkeypatch,
+        GitHubAPIError("Repository or file was not found. Check the URL and token permissions."),
+    ).post("/api/scan", json={"repository_url": VALID_URL})
+
+    assert private.status_code == missing.status_code
+    assert private.json() == missing.json()
 
 
 def test_scan_uses_server_side_token(monkeypatch):
@@ -409,8 +430,8 @@ def test_compare_rejects_private_repo(monkeypatch):
         "/api/compare",
         json={"repository_url": VALID_URL, "baseline_ref": "a", "target_ref": "b"},
     )
-    assert response.status_code == 403
-    assert response.json()["detail"]["code"] == "private_repository_not_supported"
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "repository_not_found"
 
 
 def test_compare_strips_whitespace_refs(monkeypatch):

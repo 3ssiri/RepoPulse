@@ -105,18 +105,27 @@ def _parse_repository(repository_url: str) -> tuple[str, str, str | None]:
 
 
 def _reject_private(client: GitHubClient, owner: str, repo: str) -> dict:
-    """Refuse private repositories before any tree/file content is read."""
+    """Refuse private repositories before any tree/file content is read.
+
+    A private repository answers exactly like an inaccessible one. If it did
+    not, a deployment whose ``GITHUB_TOKEN`` can read private repositories
+    would let anonymous callers probe which private names that token sees.
+    """
     try:
         data = client.get_repo(owner, repo)
     except GitHubAPIError as error:
         raise _map_github_error(error) from error
     if data.get("private"):
-        raise ApiError(
-            403,
-            "private_repository_not_supported",
-            "Private repositories are not supported by the web app.",
-        )
+        raise _repository_not_found()
     return data
+
+
+def _repository_not_found() -> ApiError:
+    return ApiError(
+        404,
+        "repository_not_found",
+        "Repository was not found. Only public github.com repositories are supported.",
+    )
 
 
 def _map_github_error(error: GitHubAPIError) -> ApiError:
@@ -145,11 +154,7 @@ def _map_github_error(error: GitHubAPIError) -> ApiError:
                 "ref_not_found",
                 "The requested ref was not found in this repository.",
             )
-        return ApiError(
-            404,
-            "repository_not_found",
-            "Repository was not found. Only public github.com repositories are supported.",
-        )
+        return _repository_not_found()
     return ApiError(
         502,
         "github_unavailable",

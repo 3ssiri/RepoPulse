@@ -18,6 +18,7 @@
 - URL-derived refs use the same 256-character limit as body refs.
 - Partial WebMCP tool registration is aborted if any `registerTool` call fails.
 - The web adapter reuses the privacy-check repository payload so scan/compare do not call `get_repo` twice.
+- Private repositories now return the same `404 repository_not_found` as inaccessible ones instead of a distinct `403 private_repository_not_supported`. The old response let an anonymous caller probe which private repository names a deployment's `GITHUB_TOKEN` could read.
 
 ## 0.3.6 - 2026-08-07
 
