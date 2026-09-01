@@ -42,7 +42,7 @@ def test_stale_helper_separates_generation_from_optional_repository_identity():
     helper = source.split("function isStaleResult", 1)[1].split("function beginRequest", 1)[0]
 
     assert "startedGeneration !== currentGeneration" in helper
-    assert "startedUrl === null || currentUrl === null" in helper
+    assert "startedUrl !== null && currentUrl !== null" in helper
     assert "startedUrl !== currentUrl" in helper
 
 
