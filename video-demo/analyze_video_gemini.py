@@ -250,7 +250,7 @@ def run_dry_run():
     print("\nDRY-RUN VALIDATION PASSED COMPLETELY.")
 
 
-def run_live():
+def run_live(resume=True):
     api_key = os.environ.get('GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
     if not api_key:
         print("ERROR: GEMINI_API_KEY (or GOOGLE_API_KEY) environment variable is not set.")
@@ -270,7 +270,7 @@ def run_live():
     manifest = load_manifest()
     auth_schema = load_authoritative_schema()
     api_schema = derive_api_safe_schema(auth_schema)
-    upload_state = load_upload_state()
+    upload_state = load_upload_state() if resume else {}
 
     client = genai.Client(api_key=api_key)
 
@@ -381,6 +381,8 @@ def run_live():
 def main():
     parser = argparse.ArgumentParser(description="P2 Gemini Agentic Video Analysis for RepoPulse WebMCP Demo")
     parser.add_argument('--dry-run', action='store_true', help="Run local validation without API calls or network requests")
+    parser.add_argument('--resume', action='store_true', default=True, help="Resume from previously uploaded file references if active (default: True)")
+    parser.add_argument('--no-resume', action='store_false', dest='resume', help="Force re-upload of all proxy clips")
     args = parser.parse_args()
 
     if args.dry_run:
@@ -392,7 +394,7 @@ def main():
             run_dry_run()
             print("\nTo execute live analysis, set GEMINI_API_KEY and run without --dry-run.")
         else:
-            run_live()
+            run_live(resume=args.resume)
 
 
 if __name__ == '__main__':
