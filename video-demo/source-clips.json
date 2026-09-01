@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "created": "2026-09-02T00:04:00+03:00",
+  "workspace_directory": "video-demo/public/raw",
+  "proxy_directory": "video-demo/public/proxy",
+  "total_clips": 8,
+  "combined_duration_seconds": 352.209,
+  "clips": [
+    {
+      "clip_id": "clip-01",
+      "chronological_order": 1,
+      "filename": "Desktop 2026.09.01 - 23.18.03.02.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.18.03.02.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-01.mp4",
+      "sha256": "8cbc20be002669fdb33f3a518336b59a5613fc7a1b9b724e76d618a9101e4a1f",
+      "duration_seconds": 97.275267,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 92592826
+    },
+    {
+      "clip_id": "clip-02",
+      "chronological_order": 2,
+      "filename": "Desktop 2026.09.01 - 23.20.09.03.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.20.09.03.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-02.mp4",
+      "sha256": "ecf1f40713cba8c1e87792a67b03b58a3aaa54cb980b1d1593a9ef304fc01017",
+      "duration_seconds": 58.825567,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 55746530
+    },
+    {
+      "clip_id": "clip-03",
+      "chronological_order": 3,
+      "filename": "Desktop 2026.09.01 - 23.22.18.04.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.22.18.04.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-03.mp4",
+      "sha256": "b2dc5fe19403d2439c536419068d57179b6f29eb5219969251494ffc2a6fe061",
+      "duration_seconds": 37.508789,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 44388946
+    },
+    {
+      "clip_id": "clip-04",
+      "chronological_order": 4,
+      "filename": "Desktop 2026.09.01 - 23.26.41.06.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.26.41.06.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-04.mp4",
+      "sha256": "64e8de779b385904cb1094c29d6c5e63bcd4dd41cb9ed6b0d6b676cb81e7aec2",
+      "duration_seconds": 32.835478,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 27649021
+    },
+    {
+      "clip_id": "clip-05",
+      "chronological_order": 5,
+      "filename": "Desktop 2026.09.01 - 23.28.56.07.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.28.56.07.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-05.mp4",
+      "sha256": "02017566feed9cbc8189608e6ce4bc57ff279aed043b752e54ffcf06889b1e45",
+      "duration_seconds": 21.792578,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 21167897
+    },
+    {
+      "clip_id": "clip-06",
+      "chronological_order": 6,
+      "filename": "Desktop 2026.09.01 - 23.29.54.08.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.29.54.08.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-06.mp4",
+      "sha256": "ee5a8e79f7d2c60dd11598cb53c8ee26cc879ad5fafbd9472428ab17e8767736",
+      "duration_seconds": 27.324256,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 29870693
+    },
+    {
+      "clip_id": "clip-07",
+      "chronological_order": 7,
+      "filename": "Desktop 2026.09.01 - 23.31.11.09.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.31.11.09.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-07.mp4",
+      "sha256": "47cf24f48da83c059358e2287a3f1b239168c096251377ac6c11bc31c1a9a350",
+      "duration_seconds": 45.353067,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 52744982
+    },
+    {
+      "clip_id": "clip-08",
+      "chronological_order": 8,
+      "filename": "Desktop 2026.09.01 - 23.38.20.10.mp4",
+      "workspace_path": "video-demo/public/raw/Desktop 2026.09.01 - 23.38.20.10.mp4",
+      "analysis_proxy_path": "video-demo/public/proxy/clip-08.mp4",
+      "sha256": "ef2bd8f3faf4e19f95b9fd8dddd25cfa656c6001f0ceac67c89941c12983536c",
+      "duration_seconds": 31.293722,
+      "resolution": "2560x1440",
+      "fps": "60000/1001",
+      "codecs": {
+        "video": "h264 (High)",
+        "audio": "aac (LC)"
+      },
+      "file_size_bytes": 30615263
+    }
+  ]
+}

@@ -4,11 +4,28 @@
   "title": "RepoPulse WebMCP Demo Timeline",
   "type": "object",
   "additionalProperties": false,
-  "required": ["source_file", "analysis_model", "scenes"],
+  "required": ["source_manifest", "analysis_model", "scenes"],
   "properties": {
-    "source_file": {"type": "string", "minLength": 1},
+    "source_manifest": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repository-relative path to source-clips.json"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["clip_id", "workspace_path", "duration_seconds"],
+        "properties": {
+          "clip_id": {"type": "string", "pattern": "^clip-[0-9]{2}$"},
+          "workspace_path": {"type": "string", "minLength": 1},
+          "duration_seconds": {"type": "number", "minimum": 0}
+        }
+      }
+    },
     "analysis_model": {"type": "string", "minLength": 1},
-    "source_duration_seconds": {"type": "number", "minimum": 0},
+    "combined_duration_seconds": {"type": "number", "minimum": 0},
     "notes": {"type": "array", "items": {"type": "string"}},
     "scenes": {
       "type": "array",
@@ -19,6 +36,7 @@
         "required": [
           "id",
           "status",
+          "source_clip_id",
           "source_start",
           "source_end",
           "evidence",
@@ -42,6 +60,10 @@
           "status": {
             "type": "string",
             "enum": ["FOUND", "NEEDS_RERECORD"]
+          },
+          "source_clip_id": {
+            "type": ["string", "null"],
+            "pattern": "^clip-[0-9]{2}$"
           },
           "source_start": {"type": ["number", "null"], "minimum": 0},
           "source_end": {"type": ["number", "null"], "minimum": 0},
@@ -73,6 +95,7 @@
             "if": {"properties": {"status": {"const": "FOUND"}}},
             "then": {
               "properties": {
+                "source_clip_id": {"type": "string", "pattern": "^clip-[0-9]{2}$"},
                 "source_start": {"type": "number"},
                 "source_end": {"type": "number"}
               }
@@ -82,6 +105,7 @@
             "if": {"properties": {"status": {"const": "NEEDS_RERECORD"}}},
             "then": {
               "properties": {
+                "source_clip_id": {"type": "null"},
                 "source_start": {"type": "null"},
                 "source_end": {"type": "null"}
               }

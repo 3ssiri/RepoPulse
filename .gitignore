@@ -25,7 +25,11 @@ docs/*.local
 # WebMCP demo production: keep authentic media/output local.
 # `video-demo/timeline.json` is intentionally NOT ignored so it can serve as
 # the machine-readable handoff between Gemini analysis and Remotion editing.
-video-demo/public/raw-webmcp-demo.mp4
+video-demo/public/*.mp4
+video-demo/public/raw/
+video-demo/public/proxy/
+video-demo/public/privacy-preview/
 video-demo/public/audio/*.wav
 video-demo/public/audio/*.mp3
+video-demo/*.local.json
 video-demo/out/
