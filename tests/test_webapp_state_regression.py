@@ -37,6 +37,21 @@ def test_late_compare_cannot_commit_after_repository_switch():
     assert compare.find("isStaleResult(") < compare.find("state.currentComparison = comparison")
 
 
+def test_failed_scan_puts_the_retained_selection_back_in_the_form():
+    """A failed scan keeps the previous selection; the form must show it again.
+
+    Otherwise the form displays the repository the user typed while Compare
+    still acts on the retained one, and the two silently disagree.
+    """
+    scan = _async_function("scanRepository", "async function compareRefs")
+    catch = scan.split("} catch (error) {", 1)[1]
+
+    assert "syncScanForm(state.repositoryUrl, state.ref)" in catch
+    # Only when a previous scan actually succeeded - a first failed scan must
+    # not wipe what the user typed.
+    assert catch.find("state.currentReport") < catch.find("syncScanForm(")
+
+
 def test_stale_helper_separates_generation_from_optional_repository_identity():
     """Generation always matters; repository identity is checked only when supplied."""
     source = _source()

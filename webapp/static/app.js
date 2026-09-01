@@ -137,6 +137,13 @@ async function scanRepository(repositoryUrl, ref, signal) {
     } else {
       setError(error.message || "Scan failed.");
     }
+    // The failed scan did not change the selection, so put the retained one
+    // back in the form. Without this the form shows the repository the user
+    // typed while Compare still acts on the previous one. Guarded on
+    // state.currentReport so a first, failed scan does not wipe the input.
+    if (state.currentReport) {
+      syncScanForm(state.repositoryUrl, state.ref);
+    }
     throw error;
   }
 }
